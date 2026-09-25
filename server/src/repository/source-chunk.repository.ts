@@ -29,26 +29,7 @@ export function deleteChunksBySourceId(sourceId: string) {
     });
 }
 
-// export function createSourceChunks(chunks: CreateSourceChunkData[]) {
-//     if (chunks.length === 0) {
-//         return Promise.resolve([]);
-//     }
 
-//     return prisma.$transaction(
-//         chunks.map((chunk) =>
-//             prisma.sourceChunk.create({
-//                 data: {
-//                     sourceId: chunk.sourceId,
-//                     index: chunk.index,
-//                     content: chunk.content,
-//                     tokenCount: chunk.tokenCount ?? null,
-//                     metadata: chunk.metadata,
-//                 },
-//                 select: sourceChunkSelect,
-//             }),
-//         ),
-//     );
-// }
 
 
 export function createSourceChunks(chunks: CreateSourceChunkData[]) {

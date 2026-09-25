@@ -30,20 +30,7 @@ export type SourceRecord = Prisma.SourceGetPayload<{
 }>;
 
 
-// export function createSourceRecord(data: CreateSourceData) {
-//     return prisma.source.create({
-//         data: {
-//             workspaceId: data.workspaceId,
-//             type: data.type,
-//             title: data.title,
-//             content: data.content ?? null,
-//             url: data.url ?? null,
-//             status: data.status ?? "PENDING",
-//             metadata: data.metadata,
-//         },
-//         select: sourceSelect,
-//     });
-// }
+
 
 export function createSourceRecord(data: CreateSourceData) {
     return prisma.source.create({

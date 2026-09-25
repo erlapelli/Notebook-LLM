@@ -42,30 +42,7 @@ export function findWorkspaceByIdAndUserId(
     });
 }
 
-// export function createWorkspaceRecord(
-//     userId: string,
-//     data: CreateWorkspaceInput,
-// ) {
-//     return prisma.workspace.create({
-//         data: {
-//             userId,
-//             ...data,
-//         },
-//         select: workspaceSelect,
-//     });
-// }
 
-
-// export function updateWorkspaceRecord(
-//     workspaceId: string,
-//     data: UpdateWorkspaceInput,
-// ) {
-//     return prisma.workspace.update({
-//         where: { id: workspaceId },
-//         data,
-//         select: workspaceSelect,
-//     });
-// }
 
 export function createWorkspaceRecord(
     userId: string,

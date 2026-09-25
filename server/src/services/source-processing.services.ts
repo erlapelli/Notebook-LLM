@@ -131,29 +131,7 @@ export async function extractSourceContent(sourceId: string) {
     };
 }
 
-// export async function chunkSourceContent(
-//     sourceId: string,
-//     text: string,
-//     pages?: string[],
-// ) {
-//     await deleteChunksBySourceId(sourceId);
 
-//     const chunks = pages?.length ? chunkPages(pages) : chunkText(text);
-
-//     if (chunks.length === 0) {
-//         throw new Error("No chunks were generated from source content");
-//     }
-
-//     return createSourceChunks(
-//         chunks.map((chunk) => ({
-//             sourceId,
-//             index: chunk.index,
-//             content: chunk.content,
-//             tokenCount: Math.ceil(chunk.content.length / 4),
-//             metadata: chunk.metadata as Prisma.InputJsonValue | undefined,
-//         })),
-//     );
-// }
 
 
 
