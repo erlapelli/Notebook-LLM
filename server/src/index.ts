@@ -11,7 +11,7 @@ import cors from "cors";
 
 const app = express();
 const PORT = process.env.PORT;
-const clientUrl = process.env.CLIENT_URL ?? "http://localhost:3001";
+const clientUrl = process.env.CLIENT_URL ?? "http://localhost:5173";
 
 app.use(
     cors({
