@@ -101,17 +101,21 @@ function Workspace() {
           </Card>
         </button>
 
-        <Card>
-          <div className="mb-3 text-3xl">💬</div>
+        <button
+          type="button"
+          onClick={() => navigate(`/workspaces/${workspaceId}/chat`)}
+          className="text-left"
+        >
+          <Card className="h-full cursor-pointer transition hover:shadow-md">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Chat
+            </h2>
 
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Chat
-          </h2>
-
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-            Ask questions and learn from your workspace sources.
-          </p>
-        </Card>
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+              Ask questions about your sources.
+            </p>
+          </Card>
+        </button>
 
         <Card>
           <div className="mb-3 text-3xl">✨</div>

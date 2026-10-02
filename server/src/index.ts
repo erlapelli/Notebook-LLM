@@ -4,42 +4,115 @@ import { toNodeHandler } from "better-auth/node";
 import { registerRoutes } from "./routes/index.js";
 import { errorHandler } from "./middleware/handler.middleware.js";
 import { inngest } from "./inngest/client.js";
-import { functions } from "./inngest/index.js"
+import { functions } from "./inngest/index.js";
 import { serve } from "inngest/express";
 import { auth } from "./lib/auth.js";
 import cors from "cors";
 
 const app = express();
-const PORT = process.env.PORT;
+
+const PORT = process.env.PORT ?? 8081;
+
 const clientUrl = process.env.CLIENT_URL ?? "http://localhost:5173";
 
-app.use(
-    cors({
-        origin: clientUrl,
-        credentials: true,
-    }),
-);
+/*
+ * CORS configuration
+ */
+const corsOptions = {
+  origin: clientUrl,
+  credentials: true,
 
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
 
+  allowedHeaders: ["Content-Type", "Authorization"],
+
+  exposedHeaders: ["X-Conversation-Id"],
+};
+
+/*
+ * Apply CORS to all requests.
+ */
+app.use(cors(corsOptions));
+
+/*
+ * Explicitly handle browser preflight requests.
+ *
+ * The browser sends an OPTIONS request before
+ * PATCH/DELETE/etc. when CORS requires a preflight.
+ */
+app.use((req, res, next) => {
+  if (req.method === "OPTIONS") {
+    res.header("Access-Control-Allow-Origin", clientUrl);
+
+    res.header("Access-Control-Allow-Credentials", "true");
+
+    res.header(
+      "Access-Control-Allow-Methods",
+      "GET,POST,PUT,PATCH,DELETE,OPTIONS",
+    );
+
+    res.header("Access-Control-Allow-Headers", "Content-Type,Authorization");
+
+    res.header("Access-Control-Expose-Headers", "X-Conversation-Id");
+
+    return res.sendStatus(204);
+  }
+
+  next();
+});
+
+/*
+ * Better Auth handler
+ *
+ * This must stay before express.json().
+ */
 app.all("/api/auth/{*any}", toNodeHandler(auth));
-// Mount body-parsing middleware after the Better Auth handler.
+
+/*
+ * Body parsing middleware
+ */
 app.use(express.json());
 
-app.use("/api/inngest", serve({ client: inngest, functions }));
+/*
+ * Inngest
+ */
+app.use(
+  "/api/inngest",
+  serve({
+    client: inngest,
+    functions,
+  }),
+);
 
+/*
+ * Test route
+ */
 app.get("/", (req, res) => {
-    res.send("Hello World Note");
-})
+  res.send("Hello World Note");
+});
 
+/*
+ * Health check
+ */
 app.get("/health", (req, res) => {
-    res.json({ status: "ok" });
-})
+  res.json({
+    status: "ok",
+  });
+});
 
+/*
+ * Application routes
+ */
 registerRoutes(app);
-app.use(errorHandler)
 
+/*
+ * Global error handler
+ */
+app.use(errorHandler);
 
-
+/*
+ * Start server
+ */
 app.listen(PORT, () => {
-    console.log("Server is runnong on port 8081")
+  console.log(`Server is running on port ${PORT}`);
 });

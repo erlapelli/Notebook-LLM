@@ -40,6 +40,8 @@ function App() {
           path="/workspaces/:workspaceId/sources"
           element={<WorkspaceSources />}
         />
+
+        <Route path="/workspaces/:workspaceId/chat" element={<Chat />} />
       </Routes>
     </BrowserRouter>
   );
