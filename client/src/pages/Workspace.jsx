@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+
 import Card from "../components/Card";
 import { apiRequest } from "../services/api";
-import { useNavigate } from "react-router-dom";
 
 function Workspace() {
   const navigate = useNavigate();
@@ -79,6 +79,7 @@ function Workspace() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        {/* Sources */}
         <button
           type="button"
           onClick={() => navigate(`/workspaces/${workspaceId}/sources`)}
@@ -101,6 +102,7 @@ function Workspace() {
           </Card>
         </button>
 
+        {/* Chat */}
         <button
           type="button"
           onClick={() => navigate(`/workspaces/${workspaceId}/chat`)}
@@ -117,17 +119,28 @@ function Workspace() {
           </Card>
         </button>
 
-        <Card>
-          <div className="mb-3 text-3xl">✨</div>
+        {/* Artifacts */}
+        <button
+          type="button"
+          onClick={() => navigate(`/workspaces/${workspaceId}/artifacts`)}
+          className="text-left"
+        >
+          <Card className="h-full cursor-pointer transition hover:border-purple-300 hover:bg-purple-50 hover:shadow-md dark:hover:border-purple-800 dark:hover:bg-purple-950/30">
+            <div className="mb-3 text-3xl">✨</div>
 
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Artifacts
-          </h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Artifacts
+            </h2>
 
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-            Generate summaries, quizzes, flashcards, and more.
-          </p>
-        </Card>
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+              Generate summaries, quizzes, flashcards, and more.
+            </p>
+
+            <p className="mt-4 text-sm font-medium text-purple-600 dark:text-purple-400">
+              Open Artifacts →
+            </p>
+          </Card>
+        </button>
       </div>
     </div>
   );

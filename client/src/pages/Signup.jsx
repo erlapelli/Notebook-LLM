@@ -217,6 +217,20 @@ function Signup() {
 
           {googleLoading ? "Connecting to Google..." : "Continue with Google"}
         </button>
+
+        {/* Login link */}
+        <div className="mt-6 text-center">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Already have an account?{" "}
+            <button
+              type="button"
+              onClick={() => navigate("/login")}
+              className="font-medium text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300"
+            >
+              Sign in
+            </button>
+          </p>
+        </div>
       </div>
     </div>
   );
