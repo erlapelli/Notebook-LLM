@@ -1,38 +1,121 @@
 import { useEffect, useRef, useState } from "react";
+
 import { useNavigate, useParams } from "react-router-dom";
+
 import Card from "../components/Card";
+
 import Button from "../components/Button";
-import { apiRequest } from "../services/api";
+
+import { apiRequest, deleteSource } from "../services/api";
 
 function WorkspaceSources() {
   const { workspaceId } = useParams();
+
   const navigate = useNavigate();
+
   const fileInputRef = useRef(null);
 
   const [sources, setSources] = useState([]);
+
   const [loading, setLoading] = useState(true);
+
   const [uploading, setUploading] = useState(false);
+
   const [error, setError] = useState("");
 
-  const fetchSources = async () => {
-    try {
-      setLoading(true);
-      setError("");
+  const [showAddSource, setShowAddSource] = useState(false);
 
-      const data = await apiRequest(`/api/workspaces/${workspaceId}/sources`);
+  const [sourceType, setSourceType] = useState("PDF");
 
-      setSources(data);
-    } catch (error) {
-      console.error("Sources fetch error:", error);
-      setError("Failed to load sources.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [title, setTitle] = useState("");
 
+  const [url, setUrl] = useState("");
+
+  const [content, setContent] = useState("");
+
+  /*
+   * Initial source loading
+   */
   useEffect(() => {
-    fetchSources();
+    let cancelled = false;
+
+    const loadSources = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const data = await apiRequest(`/api/workspaces/${workspaceId}/sources`);
+
+        if (!cancelled) {
+          setSources(data);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.error("Sources fetch error:", error);
+          setError("Failed to load sources.");
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadSources();
+
+    return () => {
+      cancelled = true;
+    };
   }, [workspaceId]);
+
+  /*
+   * Automatic status polling
+   *
+   * This effect watches the current sources state.
+   * When a newly uploaded/imported source becomes PENDING,
+   * polling starts automatically.
+   * Polling stops when there are no PENDING or PROCESSING sources.
+   */
+  useEffect(() => {
+    const hasProcessingSources = sources.some(
+      (source) => source.status === "PENDING" || source.status === "PROCESSING",
+    );
+
+    if (!hasProcessingSources) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const timeoutId = setTimeout(async () => {
+      if (cancelled) {
+        return;
+      }
+
+      try {
+        const data = await apiRequest(`/api/workspaces/${workspaceId}/sources`);
+
+        if (!cancelled) {
+          setSources(data);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.error("Source status refresh error:", error);
+        }
+      }
+    }, 3000);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timeoutId);
+    };
+  }, [workspaceId, sources]);
+
+  /*
+
+   * PDF Upload
+
+   */
 
   const handleUploadPdf = async (event) => {
     const file = event.target.files?.[0];
@@ -43,22 +126,29 @@ function WorkspaceSources() {
 
     if (file.type !== "application/pdf") {
       setError("Please select a PDF file.");
+
       event.target.value = "";
+
       return;
     }
 
     try {
       setUploading(true);
+
       setError("");
 
       const formData = new FormData();
+
       formData.append("file", file);
 
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/api/workspaces/${workspaceId}/sources/upload`,
+
         {
           method: "POST",
+
           body: formData,
+
           credentials: "include",
         },
       );
@@ -80,16 +170,187 @@ function WorkspaceSources() {
       setSources((currentSources) => [uploadedSource, ...currentSources]);
 
       event.target.value = "";
+
+      setShowAddSource(false);
     } catch (error) {
       console.error("PDF upload error:", error);
-      setError("Failed to upload PDF.");
+
+      setError(error.message || "Failed to upload PDF.");
     } finally {
       setUploading(false);
     }
   };
 
+  /*
+
+   * Website / YouTube / Text / Markdown
+
+   */
+
+  const handleCreateSource = async (event) => {
+    event.preventDefault();
+
+    try {
+      setUploading(true);
+
+      setError("");
+
+      let createdSource;
+
+      if (sourceType === "WEBSITE") {
+        if (!url.trim()) {
+          setError("Please enter a website URL.");
+
+          setUploading(false);
+
+          return;
+        }
+
+        createdSource = await apiRequest(
+          `/api/workspaces/${workspaceId}/sources/import/website`,
+
+          {
+            method: "POST",
+
+            body: JSON.stringify({
+              url: url.trim(),
+
+              title: title.trim() || undefined,
+            }),
+          },
+        );
+      }
+
+      if (sourceType === "YOUTUBE") {
+        if (!url.trim()) {
+          setError("Please enter a YouTube URL.");
+
+          setUploading(false);
+
+          return;
+        }
+
+        createdSource = await apiRequest(
+          `/api/workspaces/${workspaceId}/sources/import/youtube`,
+
+          {
+            method: "POST",
+
+            body: JSON.stringify({
+              url: url.trim(),
+
+              title: title.trim() || undefined,
+            }),
+          },
+        );
+      }
+
+      if (sourceType === "TEXT" || sourceType === "MARKDOWN") {
+        if (!title.trim()) {
+          setError("Please enter a title.");
+
+          setUploading(false);
+
+          return;
+        }
+
+        if (!content.trim()) {
+          setError("Please enter some content.");
+
+          setUploading(false);
+
+          return;
+        }
+
+        createdSource = await apiRequest(
+          `/api/workspaces/${workspaceId}/sources`,
+
+          {
+            method: "POST",
+
+            body: JSON.stringify({
+              type: sourceType,
+
+              title: title.trim(),
+
+              content: content,
+            }),
+          },
+        );
+      }
+
+      if (createdSource) {
+        setSources((currentSources) => [createdSource, ...currentSources]);
+      }
+
+      setTitle("");
+
+      setUrl("");
+
+      setContent("");
+
+      setShowAddSource(false);
+    } catch (error) {
+      console.error("Source creation error:", error);
+
+      setError(error.message || "Failed to create source.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  /*
+
+   * Change Source Type
+
+   */
+
+  const handleSourceTypeChange = (type) => {
+    setSourceType(type);
+
+    setTitle("");
+
+    setUrl("");
+
+    setContent("");
+
+    setError("");
+  };
+
+  /*
+
+   * Delete Source
+
+   */
+
+  const handleDeleteSource = async (sourceId) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this source?",
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setError("");
+
+      await deleteSource(workspaceId, sourceId);
+
+      setSources((currentSources) =>
+        currentSources.filter((source) => source.id !== sourceId),
+      );
+    } catch (error) {
+      console.error("Source delete error:", error);
+
+      setError("Failed to delete source.");
+    }
+  };
+
   return (
     <div className="mx-auto w-full max-w-7xl">
+      {/* Header */}
+
       <div className="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white sm:text-3xl">
@@ -102,16 +363,8 @@ function WorkspaceSources() {
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="application/pdf"
-            onChange={handleUploadPdf}
-            className="hidden"
-          />
-
-          <Button onClick={() => fileInputRef.current?.click()}>
-            {uploading ? "Uploading..." : "Upload PDF"}
+          <Button onClick={() => setShowAddSource((value) => !value)}>
+            {showAddSource ? "Close" : "+ Add Source"}
           </Button>
 
           <Button
@@ -123,11 +376,274 @@ function WorkspaceSources() {
         </div>
       </div>
 
+      {/* Add Source Section */}
+
+      {showAddSource && (
+        <Card className="mb-6">
+          <div className="mb-5">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+              Add Source
+            </h2>
+
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              Choose how you want to add learning material.
+            </p>
+          </div>
+
+          {/* Source Type Buttons */}
+
+          <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-5">
+            {/* PDF */}
+
+            <button
+              type="button"
+              onClick={() => handleSourceTypeChange("PDF")}
+              className={`rounded-lg border p-4 text-left transition ${
+                sourceType === "PDF"
+                  ? "border-purple-500 bg-purple-50 dark:border-purple-400 dark:bg-purple-950/30"
+                  : "border-gray-200 bg-white hover:border-purple-300 dark:border-gray-700 dark:bg-gray-900"
+              }`}
+            >
+              <div className="text-2xl">📄</div>
+
+              <div className="mt-2 font-medium text-gray-900 dark:text-white">
+                PDF
+              </div>
+
+              <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Upload a PDF
+              </div>
+            </button>
+
+            {/* Website */}
+
+            <button
+              type="button"
+              onClick={() => handleSourceTypeChange("WEBSITE")}
+              className={`rounded-lg border p-4 text-left transition ${
+                sourceType === "WEBSITE"
+                  ? "border-purple-500 bg-purple-50 dark:border-purple-400 dark:bg-purple-950/30"
+                  : "border-gray-200 bg-white hover:border-purple-300 dark:border-gray-700 dark:bg-gray-900"
+              }`}
+            >
+              <div className="text-2xl">🌐</div>
+
+              <div className="mt-2 font-medium text-gray-900 dark:text-white">
+                Website
+              </div>
+
+              <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Import a webpage
+              </div>
+            </button>
+
+            {/* YouTube */}
+
+            <button
+              type="button"
+              onClick={() => handleSourceTypeChange("YOUTUBE")}
+              className={`rounded-lg border p-4 text-left transition ${
+                sourceType === "YOUTUBE"
+                  ? "border-purple-500 bg-purple-50 dark:border-purple-400 dark:bg-purple-950/30"
+                  : "border-gray-200 bg-white hover:border-purple-300 dark:border-gray-700 dark:bg-gray-900"
+              }`}
+            >
+              <div className="text-2xl">▶️</div>
+
+              <div className="mt-2 font-medium text-gray-900 dark:text-white">
+                YouTube
+              </div>
+
+              <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Import a video transcript
+              </div>
+            </button>
+
+            {/* Text */}
+
+            <button
+              type="button"
+              onClick={() => handleSourceTypeChange("TEXT")}
+              className={`rounded-lg border p-4 text-left transition ${
+                sourceType === "TEXT"
+                  ? "border-purple-500 bg-purple-50 dark:border-purple-400 dark:bg-purple-950/30"
+                  : "border-gray-200 bg-white hover:border-purple-300 dark:border-gray-700 dark:bg-gray-900"
+              }`}
+            >
+              <div className="text-2xl">📝</div>
+
+              <div className="mt-2 font-medium text-gray-900 dark:text-white">
+                Text
+              </div>
+
+              <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Add plain text
+              </div>
+            </button>
+
+            {/* Markdown */}
+
+            <button
+              type="button"
+              onClick={() => handleSourceTypeChange("MARKDOWN")}
+              className={`rounded-lg border p-4 text-left transition ${
+                sourceType === "MARKDOWN"
+                  ? "border-purple-500 bg-purple-50 dark:border-purple-400 dark:bg-purple-950/30"
+                  : "border-gray-200 bg-white hover:border-purple-300 dark:border-gray-700 dark:bg-gray-900"
+              }`}
+            >
+              <div className="text-2xl">📋</div>
+
+              <div className="mt-2 font-medium text-gray-900 dark:text-white">
+                Markdown
+              </div>
+
+              <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Add Markdown content
+              </div>
+            </button>
+          </div>
+
+          {/* PDF Form */}
+
+          {sourceType === "PDF" && (
+            <div className="rounded-lg border border-dashed border-gray-300 p-6 text-center dark:border-gray-700">
+              <div className="mb-3 text-4xl">📄</div>
+
+              <h3 className="font-semibold text-gray-900 dark:text-white">
+                Upload PDF
+              </h3>
+
+              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                Select a PDF file to add it to this workspace.
+              </p>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="application/pdf"
+                onChange={handleUploadPdf}
+                className="hidden"
+              />
+
+              <div className="mt-5">
+                <Button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                >
+                  {uploading ? "Uploading..." : "Choose PDF"}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Website / YouTube Form */}
+
+          {(sourceType === "WEBSITE" || sourceType === "YOUTUBE") && (
+            <form onSubmit={handleCreateSource} className="space-y-4">
+              <div>
+                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {sourceType === "WEBSITE" ? "Website URL" : "YouTube URL"}
+                </label>
+
+                <input
+                  type="url"
+                  value={url}
+                  onChange={(event) => setUrl(event.target.value)}
+                  placeholder={
+                    sourceType === "WEBSITE"
+                      ? "https\://example.com"
+                      : "https\://www\.youtube.com/watch?v=..."
+                  }
+                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:focus:ring-purple-900"
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Title{" "}
+                  <span className="font-normal text-gray-400">(optional)</span>
+                </label>
+
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(event) => setTitle(event.target.value)}
+                  placeholder="Enter a title"
+                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:focus:ring-purple-900"
+                />
+              </div>
+
+              <Button type="submit" disabled={uploading}>
+                {uploading
+                  ? "Importing..."
+                  : sourceType === "WEBSITE"
+                    ? "Import Website"
+                    : "Import YouTube"}
+              </Button>
+            </form>
+          )}
+
+          {/* Text / Markdown Form */}
+
+          {(sourceType === "TEXT" || sourceType === "MARKDOWN") && (
+            <form onSubmit={handleCreateSource} className="space-y-4">
+              <div>
+                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Title
+                </label>
+
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(event) => setTitle(event.target.value)}
+                  placeholder={
+                    sourceType === "TEXT" ? "My Notes" : "My Markdown Notes"
+                  }
+                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:focus:ring-purple-900"
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Content
+                </label>
+
+                <textarea
+                  value={content}
+                  onChange={(event) => setContent(event.target.value)}
+                  rows={10}
+                  placeholder={
+                    sourceType === "TEXT"
+                      ? "Paste your text here..."
+                      : "# Heading\n\nWrite your Markdown content here..."
+                  }
+                  className="w-full resize-y rounded-lg border border-gray-300 bg-white px-4 py-3 font-mono text-sm text-gray-900 outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:focus:ring-purple-900"
+                />
+              </div>
+
+              <Button type="submit" disabled={uploading}>
+                {uploading
+                  ? "Creating..."
+                  : sourceType === "TEXT"
+                    ? "Create Text Source"
+                    : "Create Markdown Source"}
+              </Button>
+            </form>
+          )}
+        </Card>
+      )}
+
+      {/* Error */}
+
       {error && (
         <Card className="mb-4">
           <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
         </Card>
       )}
+
+      {/* Loading */}
 
       {loading && (
         <Card>
@@ -136,6 +652,8 @@ function WorkspaceSources() {
           </p>
         </Card>
       )}
+
+      {/* Empty State */}
 
       {!loading && sources.length === 0 && (
         <Card>
@@ -146,17 +664,26 @@ function WorkspaceSources() {
               No sources yet
             </h2>
 
-            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-gray-500 dark:text-gray-400 sm:text-base">
-              Upload a PDF to start learning.
+            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-gray-500 dark:text-gray-400">
+              Add a PDF, website, YouTube video, text, or Markdown source to
+              start learning.
             </p>
           </div>
         </Card>
       )}
 
+      {/* Sources */}
+
       {!loading && sources.length > 0 && (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {sources.map((source) => (
-            <Card key={source.id}>
+            <Card
+              key={source.id}
+              onClick={() =>
+                navigate(`/workspaces/${workspaceId}/sources/${source.id}`)
+              }
+              className="cursor-pointer transition hover:border-purple-300 hover:bg-purple-50 hover:shadow-md dark:hover:border-purple-800 dark:hover:bg-purple-950/30"
+            >
               <h2 className="font-semibold text-gray-900 dark:text-white">
                 {source.title || "Untitled Source"}
               </h2>
@@ -168,6 +695,23 @@ function WorkspaceSources() {
               <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                 Status: {source.status}
               </p>
+
+              <div className="mt-4 flex items-center justify-between gap-3">
+                <span className="text-sm font-medium text-purple-600 dark:text-purple-400">
+                  View Source →
+                </span>
+
+                <Button
+                  variant="outline"
+                  onClick={(event) => {
+                    event.stopPropagation();
+
+                    handleDeleteSource(source.id);
+                  }}
+                >
+                  Delete
+                </Button>
+              </div>
             </Card>
           ))}
         </div>

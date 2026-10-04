@@ -89,3 +89,24 @@ export async function getWorkspaceSources(workspaceId) {
         `/api/workspaces/${workspaceId}/sources`,
     );
 }
+
+
+export async function getSource(workspaceId, sourceId) {
+  return apiRequest(
+    `/api/workspaces/${workspaceId}/sources/${sourceId}`,
+  );
+}
+
+export async function deleteSource(workspaceId, sourceId) {
+  const response = await fetch(
+    `${API_URL}/api/workspaces/${workspaceId}/sources/${sourceId}`,
+    {
+      method: "DELETE",
+      credentials: "include",
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(`API request failed: ${response.status}`);
+  }
+}

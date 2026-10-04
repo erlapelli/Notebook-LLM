@@ -1,10 +1,18 @@
 import type { Request, Response } from "express";
+
 import {
   streamWorkspaceChat,
   getConversationMessagesForWorkspace,
+  listConversationsForWorkspace,
+  createConversationForWorkspace,
+  deleteConversationForWorkspace,
 } from "../services/chat.services.js";
+
 import { ValidationError } from "../types/app-error.js";
 
+/**
+ * Main chat endpoint
+ */
 export async function chat(req: Request, res: Response) {
   const workspaceId = req.params.workspaceId;
 
@@ -30,6 +38,64 @@ export async function chat(req: Request, res: Response) {
   });
 }
 
+/**
+ * Get all conversations for a workspace
+ *
+ * Used by the ChatGPT-style sidebar/history.
+ */
+export async function getConversations(req: Request, res: Response) {
+  const workspaceId = req.params.workspaceId;
+
+  if (typeof workspaceId !== "string") {
+    throw new ValidationError("Invalid workspace id");
+  }
+
+  if (!workspaceId) {
+    throw new ValidationError("Workspace id is required");
+  }
+
+  const conversations = await listConversationsForWorkspace(
+    workspaceId,
+    req.session.user.id,
+  );
+
+  res.json(conversations);
+}
+
+/**
+ * Create an empty conversation
+ *
+ * Used when the user clicks "+ New Chat".
+ */
+export async function createConversation(req: Request, res: Response) {
+  const workspaceId = req.params.workspaceId;
+
+  if (typeof workspaceId !== "string") {
+    throw new ValidationError("Invalid workspace id");
+  }
+
+  if (!workspaceId) {
+    throw new ValidationError("Workspace id is required");
+  }
+
+  const { title } = req.body ?? {};
+
+  if (title !== undefined && title !== null && typeof title !== "string") {
+    throw new ValidationError("Invalid conversation title");
+  }
+
+  const conversation = await createConversationForWorkspace(
+    workspaceId,
+    req.session.user.id,
+    title?.trim() || undefined,
+  );
+
+  res.status(201).json(conversation);
+}
+
+/**
+ * Get messages for one conversation
+ */
 export async function getConversationMessages(req: Request, res: Response) {
   const workspaceId = req.params.workspaceId;
   const conversationId = req.params.conversationId;
@@ -49,4 +115,28 @@ export async function getConversationMessages(req: Request, res: Response) {
   );
 
   res.json(messages);
+}
+
+/**
+ * Delete a conversation
+ */
+export async function deleteConversation(req: Request, res: Response) {
+  const workspaceId = req.params.workspaceId;
+  const conversationId = req.params.conversationId;
+
+  if (typeof workspaceId !== "string") {
+    throw new ValidationError("Invalid workspace id");
+  }
+
+  if (typeof conversationId !== "string") {
+    throw new ValidationError("Invalid conversation id");
+  }
+
+  await deleteConversationForWorkspace(
+    workspaceId,
+    conversationId,
+    req.session.user.id,
+  );
+
+  res.status(204).send();
 }

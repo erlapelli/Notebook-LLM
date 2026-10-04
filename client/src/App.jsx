@@ -13,6 +13,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Workspace from "./pages/Workspace";
 import WorkspaceSources from "./pages/WorkspaceSources";
+import SourceDetails from "./pages/SourceDetails";
 
 function App() {
   return (
@@ -45,6 +46,11 @@ function App() {
           <Route
             path="/workspaces/:workspaceId/sources"
             element={<WorkspaceSources />}
+          />
+
+          <Route
+            path="/workspaces/:workspaceId/sources/:sourceId"
+            element={<SourceDetails />}
           />
 
           {/* Artifacts list */}
