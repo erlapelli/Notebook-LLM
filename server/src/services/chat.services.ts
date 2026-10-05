@@ -2,51 +2,51 @@ import { openai } from "@ai-sdk/openai";
 import type { Response } from "express";
 import { z } from "zod";
 import {
-    convertToModelMessages,
-    createUIMessageStream,
-    isStepCount,
-    pipeUIMessageStreamToResponse,
-    streamText,
-    toUIMessageStream,
-    tool,
-    type UIMessage,
+  convertToModelMessages,
+  createUIMessageStream,
+  isStepCount,
+  pipeUIMessageStreamToResponse,
+  streamText,
+  toUIMessageStream,
+  tool,
+  type UIMessage,
 } from "ai";
 import {
-    CHAT_MODEL,
-    CHAT_MODELS,
-    CONVERSATION_SUMMARY_INTERVAL,
-    RECENT_MESSAGE_WINDOW,
+  CHAT_MODEL,
+  CHAT_MODELS,
+  CONVERSATION_SUMMARY_INTERVAL,
+  RECENT_MESSAGE_WINDOW,
 } from "../lib/ai-config.js";
 import { enqueueConversationSummarize } from "../lib/conversation-events.js";
 
 import {
-    buildChatSystemPrompt,
-    retrieveWorkspaceContext,
+  buildChatSystemPrompt,
+  retrieveWorkspaceContext,
 } from "../lib/rag/retrieve.js";
 import {
-    createConversationRecord,
-    findConversationByIdAndWorkspaceId,
-    findConversationsByWorkspaceId,
-    touchConversation,
-    updateConversationRecord,
-    deleteConversationRecord,
+  createConversationRecord,
+  findConversationByIdAndWorkspaceId,
+  findConversationsByWorkspaceId,
+  touchConversation,
+  updateConversationRecord,
+  deleteConversationRecord,
 } from "../repository/conversation.repository.js";
 import {
-    createMessageRecord,
-    countMessagesByConversationId,
-    findMessagesByConversationId,
+  createMessageRecord,
+  countMessagesByConversationId,
+  findMessagesByConversationId,
 } from "../repository/message.repository.js";
 
 import {
-    formatTavilyResultsForPrompt,
-    searchWeb,
-    type TavilySearchResponse,
+  formatTavilyResultsForPrompt,
+  searchWeb,
+  type TavilySearchResponse,
 } from "../lib/tavily.js";
 import { NotFoundError, ValidationError } from "../types/app-error.js";
 import {
-    buildConversationTitle,
-    getLastUserMessageText,
-    getTextFromUIMessage,
+  buildConversationTitle,
+  getLastUserMessageText,
+  getTextFromUIMessage,
 } from "../utils/chat-message.js";
 import { getWorkspaceByIdForUser } from "./workspace.services.js";
 import { addMemoriesFromMessages, searchUserMemories } from "../lib/mem0.js";
@@ -60,11 +60,11 @@ import { addMemoriesFromMessages, searchUserMemories } from "../lib/mem0.js";
  *
  */
 export async function listConversationsForWorkspace(
-    workspaceId: string,
-    userId: string,
+  workspaceId: string,
+  userId: string,
 ) {
-    await getWorkspaceByIdForUser(workspaceId, userId);
-    return findConversationsByWorkspaceId(workspaceId);
+  await getWorkspaceByIdForUser(workspaceId, userId);
+  return findConversationsByWorkspaceId(workspaceId);
 }
 
 /**
@@ -80,12 +80,12 @@ export async function listConversationsForWorkspace(
  *
  */
 export async function createConversationForWorkspace(
-    workspaceId: string,
-    userId: string,
-    title?: string,
+  workspaceId: string,
+  userId: string,
+  title?: string,
 ) {
-    await getWorkspaceByIdForUser(workspaceId, userId);
-    return createConversationRecord(workspaceId, title);
+  await getWorkspaceByIdForUser(workspaceId, userId);
+  return createConversationRecord(workspaceId, title);
 }
 
 /**
@@ -99,22 +99,22 @@ export async function createConversationForWorkspace(
  *
  */
 export async function getConversationMessagesForWorkspace(
-    workspaceId: string,
-    conversationId: string,
-    userId: string,
+  workspaceId: string,
+  conversationId: string,
+  userId: string,
 ) {
-    await getWorkspaceByIdForUser(workspaceId, userId);
+  await getWorkspaceByIdForUser(workspaceId, userId);
 
-    const conversation = await findConversationByIdAndWorkspaceId(
-        conversationId,
-        workspaceId,
-    );
+  const conversation = await findConversationByIdAndWorkspaceId(
+    conversationId,
+    workspaceId,
+  );
 
-    if (!conversation) {
-        throw new NotFoundError("Conversation not found");
-    }
+  if (!conversation) {
+    throw new NotFoundError("Conversation not found");
+  }
 
-    return findMessagesByConversationId(conversationId);
+  return findMessagesByConversationId(conversationId);
 }
 
 /**
@@ -127,23 +127,49 @@ export async function getConversationMessagesForWorkspace(
  * @throws {NotFoundError} When the conversation does not exist
  *
  */
-export async function deleteConversationForWorkspace(
-    workspaceId: string,
-    conversationId: string,
-    userId: string,
+
+/**
+ * Updates a conversation title.
+ */
+export async function updateConversationForWorkspace(
+  workspaceId: string,
+  conversationId: string,
+  userId: string,
+  title: string,
 ) {
-    await getWorkspaceByIdForUser(workspaceId, userId);
+  await getWorkspaceByIdForUser(workspaceId, userId);
 
-    const conversation = await findConversationByIdAndWorkspaceId(
-        conversationId,
-        workspaceId,
-    );
+  const conversation = await findConversationByIdAndWorkspaceId(
+    conversationId,
+    workspaceId,
+  );
 
-    if (!conversation) {
-        throw new NotFoundError("Conversation not found");
-    }
+  if (!conversation) {
+    throw new NotFoundError("Conversation not found");
+  }
 
-    await deleteConversationRecord(conversationId);
+  return updateConversationRecord(conversationId, {
+    title,
+  });
+}
+
+export async function deleteConversationForWorkspace(
+  workspaceId: string,
+  conversationId: string,
+  userId: string,
+) {
+  await getWorkspaceByIdForUser(workspaceId, userId);
+
+  const conversation = await findConversationByIdAndWorkspaceId(
+    conversationId,
+    workspaceId,
+  );
+
+  if (!conversation) {
+    throw new NotFoundError("Conversation not found");
+  }
+
+  await deleteConversationRecord(conversationId);
 }
 
 /**
@@ -158,27 +184,27 @@ export async function deleteConversationForWorkspace(
  *
  */
 async function resolveConversation(
-    workspaceId: string,
-    conversationId: string | undefined,
-    firstMessage: string,
+  workspaceId: string,
+  conversationId: string | undefined,
+  firstMessage: string,
 ) {
-    if (conversationId) {
-        const existing = await findConversationByIdAndWorkspaceId(
-            conversationId,
-            workspaceId,
-        );
+  if (conversationId) {
+    const existing = await findConversationByIdAndWorkspaceId(
+      conversationId,
+      workspaceId,
+    );
 
-        if (!existing) {
-            throw new NotFoundError("Conversation not found");
-        }
-
-        return existing;
+    if (!existing) {
+      throw new NotFoundError("Conversation not found");
     }
 
-    return createConversationRecord(
-        workspaceId,
-        buildConversationTitle(firstMessage),
-    );
+    return existing;
+  }
+
+  return createConversationRecord(
+    workspaceId,
+    buildConversationTitle(firstMessage),
+  );
 }
 
 /**
@@ -202,174 +228,168 @@ async function resolveConversation(
  *
  */
 export async function streamWorkspaceChat(
-    res: Response,
-    workspaceId: string,
-    userId: string,
-    input: {
-        conversationId?: string;
-        messages: UIMessage[];
-        model?: string;
-        webSearch?: boolean;
-    },
+  res: Response,
+  workspaceId: string,
+  userId: string,
+  input: {
+    conversationId?: string;
+    messages: UIMessage[];
+    model?: string;
+    webSearch?: boolean;
+  },
 ) {
-    const workspace = await getWorkspaceByIdForUser(workspaceId, userId);
-    const requestedModel = input.model ?? workspace.defaultModel;
-    const chatModel =
-        CHAT_MODELS.find((model) => model === requestedModel) ?? CHAT_MODEL;
-    const webSearchEnabled =
-        input.webSearch === true && !!process.env.TAVILY_API_KEY?.trim();
+  const workspace = await getWorkspaceByIdForUser(workspaceId, userId);
+  const requestedModel = input.model ?? workspace.defaultModel;
+  const chatModel =
+    CHAT_MODELS.find((model) => model === requestedModel) ?? CHAT_MODEL;
+  const webSearchEnabled =
+    input.webSearch === true && !!process.env.TAVILY_API_KEY?.trim();
 
-    const userText = getLastUserMessageText(input.messages);
-    if (!userText) {
-        throw new ValidationError("A user message is required");
-    }
+  const userText = getLastUserMessageText(input.messages);
+  if (!userText) {
+    throw new ValidationError("A user message is required");
+  }
 
-    const conversation = await resolveConversation(
-        workspaceId,
-        input.conversationId,
-        userText,
-    );
+  const conversation = await resolveConversation(
+    workspaceId,
+    input.conversationId,
+    userText,
+  );
 
-    await createMessageRecord({
+  await createMessageRecord({
+    conversationId: conversation.id,
+    role: "USER",
+    content: userText,
+  });
+
+  const [retrievedChunks, userMemories] = await Promise.all([
+    retrieveWorkspaceContext(workspaceId, userText),
+    searchUserMemories(userId, userText),
+  ]);
+
+  const citations = retrievedChunks.map((chunk) => ({
+    sourceId: chunk.sourceId,
+    sourceTitle: chunk.sourceTitle,
+    sourceType: chunk.sourceType,
+    chunkId: chunk.chunkId,
+    chunkIndex: chunk.chunkIndex,
+    page: chunk.page,
+    excerpt: chunk.text.slice(0, 280),
+    score: chunk.score,
+  }));
+  const systemPrompt = buildChatSystemPrompt({
+    chunks: retrievedChunks,
+    conversationSummary: conversation.summary,
+    userMemories: userMemories.map((memory) => memory.memory),
+    webSearchEnabled,
+  });
+
+  const contextMessages =
+    conversation.summary && input.messages.length > RECENT_MESSAGE_WINDOW
+      ? input.messages.slice(-RECENT_MESSAGE_WINDOW)
+      : input.messages;
+
+  let webSearchResults: TavilySearchResponse | null = null;
+
+  const stream = createUIMessageStream({
+    originalMessages: input.messages,
+    execute: async ({ writer }) => {
+      const tools = webSearchEnabled
+        ? {
+            web_search: tool({
+              description:
+                "Search the web for up-to-date information outside the workspace sources.",
+              inputSchema: z.object({
+                query: z
+                  .string()
+                  .describe("The search query for current web information"),
+              }),
+              execute: async ({ query }) => {
+                const results = await searchWeb(query);
+                webSearchResults = results;
+                return formatTavilyResultsForPrompt(results);
+              },
+            }),
+          }
+        : undefined;
+
+      const result = streamText({
+        model: openai(chatModel),
+        system: systemPrompt,
+        messages: await convertToModelMessages(contextMessages),
+        ...(tools !== undefined && { tools }),
+        ...(webSearchEnabled && {
+          stopWhen: isStepCount(3),
+        }),
+      });
+
+      writer.merge(toUIMessageStream({ stream: result.stream }));
+    },
+    onFinish: async ({ responseMessage, isAborted }) => {
+      if (isAborted) {
+        return;
+      }
+
+      const assistantText = getTextFromUIMessage(responseMessage).trim();
+      if (!assistantText) {
+        return;
+      }
+
+      const webCitations = webSearchResults
+        ? webSearchResults.results.map((result) => ({
+            sourceType: "WEB" as const,
+            sourceTitle: result.title,
+            url: result.url,
+            excerpt: result.content.slice(0, 280),
+          }))
+        : [];
+      const allCitations = [...citations, ...webCitations];
+
+      await createMessageRecord({
         conversationId: conversation.id,
-        role: "USER",
-        content: userText,
-    });
+        role: "ASSISTANT",
+        content: assistantText,
+        citations: allCitations,
+      });
 
-    const [retrievedChunks, userMemories] = await Promise.all([
-        retrieveWorkspaceContext(workspaceId, userText),
-        searchUserMemories(userId, userText),
-    ]);
+      await touchConversation(conversation.id);
 
-    const citations = retrievedChunks.map((chunk) => ({
-        sourceId: chunk.sourceId,
-        sourceTitle: chunk.sourceTitle,
-        sourceType: chunk.sourceType,
-        chunkId: chunk.chunkId,
-        chunkIndex: chunk.chunkIndex,
-        page: chunk.page,
-        excerpt: chunk.text.slice(0, 280),
-        score: chunk.score,
-    }));
-    const systemPrompt = buildChatSystemPrompt({
-        chunks: retrievedChunks,
-        conversationSummary: conversation.summary,
-        userMemories: userMemories.map((memory) => memory.memory),
-        webSearchEnabled,
-    });
+      if (!conversation.title) {
+        await updateConversationRecord(conversation.id, {
+          title: buildConversationTitle(userText),
+        });
+      }
 
-    const contextMessages =
-        conversation.summary &&
-            input.messages.length > RECENT_MESSAGE_WINDOW
-            ? input.messages.slice(-RECENT_MESSAGE_WINDOW)
-            : input.messages;
+      const messageCount = await countMessagesByConversationId(conversation.id);
 
-    let webSearchResults: TavilySearchResponse | null = null;
+      if (messageCount % CONVERSATION_SUMMARY_INTERVAL === 0) {
+        await enqueueConversationSummarize({
+          conversationId: conversation.id,
+          userId,
+        });
+      }
 
-    const stream = createUIMessageStream({
-        originalMessages: input.messages,
-        execute: async ({ writer }) => {
-            const tools =
-                webSearchEnabled
-                    ? {
-                        web_search: tool({
-                            description:
-                                "Search the web for up-to-date information outside the workspace sources.",
-                            inputSchema: z.object({
-                                query: z
-                                    .string()
-                                    .describe(
-                                        "The search query for current web information",
-                                    ),
-                            }),
-                            execute: async ({ query }) => {
-                                const results = await searchWeb(query);
-                                webSearchResults = results;
-                                return formatTavilyResultsForPrompt(results);
-                            },
-                        }),
-                    }
-                    : undefined;
-
-            const result = streamText({
-                model: openai(chatModel),
-                system: systemPrompt,
-                messages: await convertToModelMessages(contextMessages),
-                ...(tools !== undefined && { tools }),
-                ...(webSearchEnabled && {
-                    stopWhen: isStepCount(3),
-                }),
-            });
-
-            writer.merge(toUIMessageStream({ stream: result.stream }));
+      void addMemoriesFromMessages(
+        userId,
+        [
+          { role: "user", content: userText },
+          { role: "assistant", content: assistantText },
+        ],
+        {
+          source: "learned",
+          conversationId: conversation.id,
         },
-        onFinish: async ({ responseMessage, isAborted }) => {
-            if (isAborted) {
-                return;
-            }
+      ).catch((error) => {
+        console.error("Mem0 add failed:", error);
+      });
+    },
+  });
 
-            const assistantText = getTextFromUIMessage(responseMessage).trim();
-            if (!assistantText) {
-                return;
-            }
-
-            const webCitations = webSearchResults
-                ? webSearchResults.results.map((result) => ({
-                    sourceType: "WEB" as const,
-                    sourceTitle: result.title,
-                    url: result.url,
-                    excerpt: result.content.slice(0, 280),
-                }))
-                : [];
-            const allCitations = [...citations, ...webCitations];
-
-            await createMessageRecord({
-                conversationId: conversation.id,
-                role: "ASSISTANT",
-                content: assistantText,
-                citations: allCitations,
-            });
-
-            await touchConversation(conversation.id);
-
-            if (!conversation.title) {
-                await updateConversationRecord(conversation.id, {
-                    title: buildConversationTitle(userText),
-                });
-            }
-
-            const messageCount = await countMessagesByConversationId(
-                conversation.id,
-            );
-
-            if (messageCount % CONVERSATION_SUMMARY_INTERVAL === 0) {
-                await enqueueConversationSummarize({
-                    conversationId: conversation.id,
-                    userId,
-                });
-            }
-
-            void addMemoriesFromMessages(
-                userId,
-                [
-                    { role: "user", content: userText },
-                    { role: "assistant", content: assistantText },
-                ],
-                {
-                    source: "learned",
-                    conversationId: conversation.id,
-                },
-            ).catch((error) => {
-                console.error("Mem0 add failed:", error);
-            });
-        },
-    });
-
-    await pipeUIMessageStreamToResponse({
-        response: res,
-        stream,
-        headers: {
-            "X-Conversation-Id": conversation.id,
-        },
-    });
+  await pipeUIMessageStreamToResponse({
+    response: res,
+    stream,
+    headers: {
+      "X-Conversation-Id": conversation.id,
+    },
+  });
 }

@@ -17,8 +17,11 @@ function getMessageContent(content) {
 
   if (Array.isArray(content)) {
     return content
+
       .map((part) => getMessageContent(part))
+
       .filter(Boolean)
+
       .join("");
   }
 
@@ -81,9 +84,11 @@ function Chat() {
   const [savingTitle, setSavingTitle] = useState(false);
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
+
   const menuRef = useRef(null);
 
   const API_URL = import.meta.env.VITE_API_URL;
+
   useEffect(() => {
     const handleOutsideClick = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -96,29 +101,47 @@ function Chat() {
     return () => {
       document.removeEventListener("mousedown", handleOutsideClick);
     };
-  }, []);
-
-  /*
+  }, []); /*
 
 
 
- * Load the conversation list.
 
 
 
- *
+
+ * Load the conversation list.
 
 
 
- * We keep the previous conversation id in localStorage only as a
 
 
 
- * convenience so the user can return to the last opened chat.
+
+ *
 
 
 
- */
+
+
+
+
+ * We keep the previous conversation id in localStorage only as a
+
+
+
+
+
+
+
+ * convenience so the user can return to the last opened chat.
+
+
+
+
+
+
+
+ */
 
   const loadConversations = async (selectSavedConversation = true) => {
     if (!workspaceId) return [];
@@ -182,7 +205,6 @@ function Chat() {
 
 
 
-   * Initial conversation history.
 
 
 
@@ -190,7 +212,24 @@ function Chat() {
 
 
 
-   */
+
+   * Initial conversation history.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   */
 
   useEffect(() => {
     loadConversations(true);
@@ -202,7 +241,6 @@ function Chat() {
 
 
 
-   * Load messages whenever the selected conversation changes.
 
 
 
@@ -210,7 +248,24 @@ function Chat() {
 
 
 
-   */
+
+   * Load messages whenever the selected conversation changes.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   */
 
   useEffect(() => {
     const loadConversation = async () => {
@@ -241,6 +296,7 @@ function Chat() {
 
         const formattedMessages = savedMessages.map((message) => ({
           role: message.role === "USER" ? "user" : "assistant",
+
           content: getMessageContent(message.content),
         }));
 
@@ -273,7 +329,6 @@ function Chat() {
 
 
 
-   * Create a new empty conversation.
 
 
 
@@ -281,7 +336,8 @@ function Chat() {
 
 
 
-   *
+
+   * Create a new empty conversation.
 
 
 
@@ -289,7 +345,6 @@ function Chat() {
 
 
 
-   * This is the ChatGPT-style "+ New Chat" action.
 
 
 
@@ -297,7 +352,40 @@ function Chat() {
 
 
 
-   */
+
+   *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   * This is the ChatGPT-style "+ New Chat" action.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   */
 
   const handleNewChat = async () => {
     if (!workspaceId || loading || creatingChat) return;
@@ -365,7 +453,6 @@ function Chat() {
 
 
 
-   * Open an existing conversation from the sidebar.
 
 
 
@@ -373,7 +460,24 @@ function Chat() {
 
 
 
-   */
+
+   * Open an existing conversation from the sidebar.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   */
 
   const handleSelectConversation = (id) => {
     if (loading || id === conversationId) return;
@@ -395,7 +499,6 @@ function Chat() {
 
 
 
-   * Delete a conversation.
 
 
 
@@ -403,19 +506,42 @@ function Chat() {
 
 
 
-   */
+
+   * Delete a conversation.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   */
 
   const handleStartEdit = (event, conversation) => {
     event.stopPropagation();
+
     setOpenMenuId(null);
+
     setEditingChatId(conversation.id);
+
     setEditingTitle(conversation.title || "");
   };
 
   const handleCancelEdit = (event) => {
     event?.stopPropagation();
+
     setEditingChatId(null);
+
     setEditingTitle("");
+
     setSavingTitle(false);
   };
 
@@ -430,16 +556,21 @@ function Chat() {
 
     try {
       setSavingTitle(true);
+
       setError("");
 
       const response = await fetch(
         `${API_URL}/api/workspaces/${workspaceId}/conversations/${id}`,
+
         {
           method: "PATCH",
+
           headers: {
             "Content-Type": "application/json",
           },
+
           credentials: "include",
+
           body: JSON.stringify({ title }),
         },
       );
@@ -463,9 +594,11 @@ function Chat() {
       );
 
       setEditingChatId(null);
+
       setEditingTitle("");
     } catch (error) {
       console.error("Rename chat error:", error);
+
       setError(error.message || "Failed to rename chat.");
     } finally {
       setSavingTitle(false);
@@ -550,7 +683,6 @@ function Chat() {
 
 
 
-   * Send a message to the existing backend chat endpoint.
 
 
 
@@ -558,7 +690,8 @@ function Chat() {
 
 
 
-   *
+
+   * Send a message to the existing backend chat endpoint.
 
 
 
@@ -566,7 +699,6 @@ function Chat() {
 
 
 
-   * If conversationId is null, the backend automatically creates a
 
 
 
@@ -574,7 +706,8 @@ function Chat() {
 
 
 
-   * conversation from the first user message.
+
+   *
 
 
 
@@ -582,7 +715,47 @@ function Chat() {
 
 
 
-   */
+
+
+
+
+
+
+
+
+   * If conversationId is null, the backend automatically creates a
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   * conversation from the first user message.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   */
 
   const handleSend = async () => {
     const text = input.trim();
@@ -658,7 +831,6 @@ function Chat() {
 
 
 
-       * The backend creates a conversation automatically when
 
 
 
@@ -666,7 +838,8 @@ function Chat() {
 
 
 
-       * conversationId is not provided.
+
+       * The backend creates a conversation automatically when
 
 
 
@@ -674,7 +847,31 @@ function Chat() {
 
 
 
-       */
+
+
+
+
+
+
+
+
+       * conversationId is not provided.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+       */
 
       const newConversationId = response.headers.get("X-Conversation-Id");
 
@@ -694,7 +891,6 @@ function Chat() {
 
 
 
-       * Add an empty assistant message first.
 
 
 
@@ -702,7 +898,8 @@ function Chat() {
 
 
 
-       * We update it as text-delta events arrive.
+
+       * Add an empty assistant message first.
 
 
 
@@ -710,7 +907,31 @@ function Chat() {
 
 
 
-       */
+
+
+
+
+
+
+
+
+       * We update it as text-delta events arrive.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+       */
 
       setMessages((currentMessages) => [
         ...currentMessages,
@@ -797,7 +1018,6 @@ function Chat() {
 
 
 
-       * The backend has now saved the assistant message and citations.
 
 
 
@@ -805,7 +1025,8 @@ function Chat() {
 
 
 
-       * Reload the saved conversation so the UI stays in sync with
+
+       * The backend has now saved the assistant message and citations.
 
 
 
@@ -813,7 +1034,6 @@ function Chat() {
 
 
 
-       * PostgreSQL.
 
 
 
@@ -821,7 +1041,40 @@ function Chat() {
 
 
 
-       */
+
+       * Reload the saved conversation so the UI stays in sync with
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+       * PostgreSQL.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+       */
 
       if (newConversationId) {
         const messagesResponse = await fetch(
@@ -854,7 +1107,6 @@ function Chat() {
 
 
 
-         * Refresh sidebar because the conversation title and
 
 
 
@@ -862,7 +1114,8 @@ function Chat() {
 
 
 
-         * updatedAt may have changed after the message.
+
+         * Refresh sidebar because the conversation title and
 
 
 
@@ -870,7 +1123,31 @@ function Chat() {
 
 
 
-         */
+
+
+
+
+
+
+
+
+         * updatedAt may have changed after the message.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+         */
 
         const updatedConversations = await loadConversations(false);
 
@@ -903,54 +1180,73 @@ function Chat() {
 
   return (
     <div className="mx-auto flex h-[calc(100vh-5rem)] w-full max-w-7xl flex-col sm:h-[calc(100vh-7rem)]">
-      {/* Header */}{" "}
+            {/* Header */}      {" "}
       <div className="mb-4 sm:mb-5">
-        {" "}
+                       {" "}
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white sm:text-3xl">
-          Chat with NotebookLLM{" "}
+                    Chat with NotebookLLM        {" "}
         </h1>{" "}
+               {" "}
         <p className="mt-1 text-sm text-gray-600 dark:text-gray-300 sm:text-base">
-          Ask questions about your learning materials.{" "}
+                    Ask questions about your learning materials.        {" "}
         </p>{" "}
+             {" "}
       </div>
-      {/* Main Chat Layout */}{" "}
-      <div className="flex min-h-0 flex-1 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
-        {/* Conversation Sidebar */}{" "}
+            {/* Main Chat Layout */}      {" "}
+      <div className="relative flex min-h-0 flex-1 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+                {/* Conversation Sidebar */}         {/* Open Sidebar Button */}
+               {" "}
+        {!sidebarOpen && (
+          <button
+            type="button"
+            onClick={() => setSidebarOpen(true)}
+            title="Open sidebar"
+            aria-label="Open sidebar"
+            className="absolute left-3 top-3 z-40 rounded-lg bg-purple-600 px-3 py-2 text-lg text-white shadow-md transition-colors hover:bg-purple-700"
+          >
+                    ☰        {" "}
+          </button>
+        )}
+               {" "}
         {sidebarOpen && (
           <aside className="flex w-72 shrink-0 flex-col border-r border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-950">
-            {" "}
+                                   {" "}
             <div className="flex items-center gap-2 border-b border-gray-200 p-3 dark:border-gray-800">
-              {" "}
+                                         {" "}
               <button
                 type="button"
                 onClick={() => setSidebarOpen(false)}
                 title="Close sidebar"
                 className="rounded-lg px-2.5 py-2 text-lg text-gray-600 hover:bg-gray-200 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
               >
-                ☰{" "}
+                                ☰              {" "}
               </button>{" "}
+                           {" "}
               <button
                 type="button"
                 onClick={handleNewChat}
                 disabled={loading || creatingChat}
                 className="flex-1 rounded-lg bg-purple-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {creatingChat ? "Creating..." : "+ New Chat"}{" "}
+                                {creatingChat ? "Creating..." : "+ New Chat"}  
+                           {" "}
               </button>{" "}
+                         {" "}
             </div>{" "}
+                       {" "}
             <div className="flex-1 overflow-y-auto p-2">
-              {" "}
+                                         {" "}
               {historyLoading ? (
                 <p className="px-3 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
-                  Loading chats...{" "}
+                                    Loading chats...                {" "}
                 </p>
               ) : conversations.length === 0 ? (
                 <p className="px-3 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
-                  No chats yet.{" "}
+                                    No chats yet.                {" "}
                 </p>
               ) : (
                 <div className="space-y-1">
-                  {" "}
+                                                     {" "}
                   {conversations.map((conversation) => (
                     <div
                       key={conversation.id}
@@ -960,10 +1256,10 @@ function Chat() {
                           : "hover:bg-gray-100 dark:hover:bg-gray-900"
                       }`}
                     >
-                      {" "}
+                                                                 {" "}
                       {editingChatId === conversation.id ? (
                         <div className="flex min-w-0 flex-1 flex-col gap-2 p-2">
-                          {" "}
+                                                                             {" "}
                           <input
                             autoFocus
                             type="text"
@@ -982,8 +1278,10 @@ function Chat() {
                             }}
                             className="w-full rounded-md border border-purple-300 bg-white px-2.5 py-2 text-sm text-gray-900 outline-none focus:border-purple-500 dark:border-purple-700 dark:bg-gray-800 dark:text-white"
                           />{" "}
+                                                   {" "}
                           <div className="flex gap-2">
-                            {" "}
+                                                                               
+                               {" "}
                             <button
                               type="button"
                               onClick={(event) =>
@@ -992,22 +1290,27 @@ function Chat() {
                               disabled={savingTitle}
                               className="rounded-md bg-purple-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-purple-700 disabled:opacity-50"
                             >
-                              {" "}
-                              {savingTitle ? "Saving..." : "Save"}{" "}
+                                                                               
+                                        {savingTitle ? "Saving..." : "Save"}    
+                                                     {" "}
                             </button>{" "}
+                                                       {" "}
                             <button
                               type="button"
                               onClick={handleCancelEdit}
                               disabled={savingTitle}
                               className="rounded-md border border-gray-300 px-2.5 py-1 text-xs font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
                             >
-                              Cancel{" "}
+                                                            Cancel              
+                                           {" "}
                             </button>{" "}
+                                                     {" "}
                           </div>{" "}
+                                                 {" "}
                         </div>
                       ) : (
                         <>
-                          {" "}
+                                                                             {" "}
                           <button
                             type="button"
                             onClick={() =>
@@ -1016,25 +1319,33 @@ function Chat() {
                             disabled={loading}
                             className="min-w-0 flex-1 px-3 py-2.5 text-left text-sm"
                           >
-                            {" "}
+                                                                               
+                               {" "}
                             <span className="block truncate font-medium text-gray-800 dark:text-gray-200">
-                              {" "}
-                              {formatConversationTitle(conversation)}{" "}
+                                                                               
+                                        {formatConversationTitle(conversation)}{" "}
+                                                         {" "}
                             </span>{" "}
+                                                       {" "}
                             <span className="mt-1 block text-xs text-gray-400 dark:text-gray-500">
-                              {" "}
+                                                                               
+                                       {" "}
                               {new Date(
                                 conversation.updatedAt,
                               ).toLocaleDateString()}{" "}
+                                                         {" "}
                             </span>{" "}
+                                                     {" "}
                           </button>{" "}
+                                                   {" "}
                           <div
                             ref={
                               openMenuId === conversation.id ? menuRef : null
                             }
                             className="relative mr-1"
                           >
-                            {" "}
+                                                                               
+                               {" "}
                             <button
                               type="button"
                               title="Chat options"
@@ -1049,11 +1360,14 @@ function Chat() {
                               }}
                               className="rounded-md px-2 py-1.5 text-lg leading-none text-gray-400 opacity-0 hover:bg-gray-200 hover:text-gray-700 group-hover:opacity-100 dark:hover:bg-gray-800 dark:hover:text-gray-200"
                             >
-                              ⋮{" "}
+                                                            ⋮                  
+                                       {" "}
                             </button>{" "}
+                                                       {" "}
                             {openMenuId === conversation.id && (
                               <div className="absolute right-0 top-full z-30 mt-1 w-36 overflow-hidden rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800">
-                                {" "}
+                                                                               
+                                               {" "}
                                 <button
                                   type="button"
                                   onClick={(event) =>
@@ -1061,10 +1375,12 @@ function Chat() {
                                   }
                                   className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
                                 >
-                                  {" "}
-                                  <span>✏️</span>
-                                  <span>Edit</span>{" "}
+                                                                               
+                                                        <span>✏️</span>         
+                                                          <span>Edit</span>    
+                                                             {" "}
                                 </button>{" "}
+                                                               {" "}
                                 <button
                                   type="button"
                                   onClick={(event) =>
@@ -1077,57 +1393,73 @@ function Chat() {
                                   disabled={deletingChatId === conversation.id}
                                   className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40"
                                 >
-                                  {" "}
-                                  <span>🗑️</span>
-                                  <span>Delete</span>{" "}
+                                                                               
+                                                        <span>🗑️</span>         
+                                                          <span>Delete</span>  
+                                                               {" "}
                                 </button>{" "}
+                                                             {" "}
                               </div>
                             )}{" "}
+                                                     {" "}
                           </div>{" "}
+                                                 {" "}
                         </>
                       )}{" "}
+                                         {" "}
                     </div>
                   ))}{" "}
+                                 {" "}
                 </div>
               )}{" "}
+                         {" "}
             </div>{" "}
+                     {" "}
           </aside>
         )}
-        {/* Chat Content */}{" "}
+                {/* Chat Content */}        {" "}
         <div className="flex min-w-0 flex-1 flex-col">
-          {/* Mobile New Chat */}{" "}
+                    {/* Mobile New Chat */}          {" "}
           <div className="border-b border-gray-200 p-3 dark:border-gray-800 md:hidden">
-            {" "}
+                                   {" "}
             <button
               type="button"
               onClick={handleNewChat}
               disabled={loading || creatingChat}
               className="w-full rounded-lg bg-purple-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {creatingChat ? "Creating..." : "+ New Chat"}{" "}
+                            {creatingChat ? "Creating..." : "+ New Chat"}      
+                   {" "}
             </button>{" "}
+                     {" "}
           </div>
-          {/* Messages */}{" "}
+                    {/* Messages */}          {" "}
           <div className="flex-1 overflow-y-auto p-4 sm:p-6">
-            {" "}
+                                   {" "}
             {messages.length === 0 ? (
               <div className="flex h-full items-center justify-center">
-                {" "}
+                                               {" "}
                 <div className="max-w-md px-2 text-center">
-                  {" "}
-                  <div className="mb-4 text-4xl sm:text-5xl">💬</div>{" "}
+                                                     {" "}
+                  <div className="mb-4 text-4xl sm:text-5xl">💬</div>          
+                         {" "}
                   <h2 className="text-lg font-semibold text-gray-900 dark:text-white sm:text-xl">
-                    Start a conversation{" "}
+                                        Start a conversation                
+                     {" "}
                   </h2>{" "}
+                                   {" "}
                   <p className="mt-2 text-sm leading-6 text-gray-500 dark:text-gray-400 sm:text-base">
-                    Ask NotebookLLM a question about your sources and start
-                    learning.{" "}
+                                        Ask NotebookLLM a question about your
+                    sources and start                     learning.            
+                         {" "}
                   </p>{" "}
+                                 {" "}
                 </div>{" "}
+                             {" "}
               </div>
             ) : (
               <div className="mx-auto flex max-w-3xl flex-col gap-4">
-                {" "}
+                                               {" "}
                 {messages.map((message, index) => (
                   <div
                     key={index}
@@ -1135,9 +1467,9 @@ function Chat() {
                       message.role === "user" ? "justify-end" : "justify-start"
                     }`}
                   >
-                    {" "}
+                                                           {" "}
                     <div className="max-w-[85%] sm:max-w-[75%]">
-                      {" "}
+                                                                 {" "}
                       <div
                         className={`rounded-xl px-4 py-3 text-sm leading-6 ${
                           message.role === "user"
@@ -1145,26 +1477,29 @@ function Chat() {
                             : "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-100"
                         }`}
                       >
-                        {" "}
+                                                                       {" "}
                         {message.role === "assistant" ? (
                           <ReactMarkdown
                             remarkPlugins={[remarkGfm]}
                             components={{
                               h1: ({ children }) => (
                                 <h1 className="mb-3 text-xl font-bold">
-                                  {children}{" "}
+                                                                    {children}  
+                                                               {" "}
                                 </h1>
                               ),
 
                               h2: ({ children }) => (
                                 <h2 className="mb-3 text-lg font-bold">
-                                  {children}{" "}
+                                                                    {children}  
+                                                               {" "}
                                 </h2>
                               ),
 
                               h3: ({ children }) => (
                                 <h3 className="mb-2 text-base font-bold">
-                                  {children}{" "}
+                                                                    {children}  
+                                                               {" "}
                                 </h3>
                               ),
 
@@ -1174,13 +1509,15 @@ function Chat() {
 
                               ul: ({ children }) => (
                                 <ul className="mb-3 list-disc space-y-1 pl-5">
-                                  {children}{" "}
+                                                                    {children}  
+                                                               {" "}
                                 </ul>
                               ),
 
                               ol: ({ children }) => (
                                 <ol className="mb-3 list-decimal space-y-1 pl-5">
-                                  {children}{" "}
+                                                                    {children}  
+                                                               {" "}
                                 </ol>
                               ),
 
@@ -1188,7 +1525,8 @@ function Chat() {
 
                               strong: ({ children }) => (
                                 <strong className="font-semibold">
-                                  {children}{" "}
+                                                                    {children}  
+                                                               {" "}
                                 </strong>
                               ),
 
@@ -1196,45 +1534,55 @@ function Chat() {
                                 if (inline) {
                                   return (
                                     <code className="rounded bg-gray-200 px-1.5 py-0.5 font-mono text-xs dark:bg-gray-700">
-                                      {" "}
-                                      {children}{" "}
+                                                                               
+                                                                       {" "}
+                                      {children}                                
+                                         {" "}
                                     </code>
                                   );
                                 }
 
                                 return (
                                   <pre className="my-3 overflow-x-auto rounded-lg bg-gray-900 p-4 text-sm text-gray-100">
-                                    {" "}
-                                    <code>{children}</code>{" "}
+                                                                               
+                                                               {" "}
+                                    <code>{children}</code>                    
+                                                 {" "}
                                   </pre>
                                 );
                               },
 
                               blockquote: ({ children }) => (
                                 <blockquote className="my-3 border-l-4 border-purple-400 pl-4 italic text-gray-600 dark:text-gray-300">
-                                  {children}{" "}
+                                                                    {children}  
+                                                               {" "}
                                 </blockquote>
                               ),
 
                               table: ({ children }) => (
                                 <div className="my-3 overflow-x-auto">
-                                  {" "}
+                                                                               
+                                                       {" "}
                                   <table className="w-full border-collapse text-sm">
-                                    {" "}
-                                    {children}{" "}
+                                                                               
+                                                                {children}      
+                                                               {" "}
                                   </table>{" "}
+                                                                 {" "}
                                 </div>
                               ),
 
                               th: ({ children }) => (
                                 <th className="border border-gray-300 bg-gray-200 px-3 py-2 text-left font-semibold dark:border-gray-600 dark:bg-gray-700">
-                                  {children}{" "}
+                                                                    {children}  
+                                                               {" "}
                                 </th>
                               ),
 
                               td: ({ children }) => (
                                 <td className="border border-gray-300 px-3 py-2 dark:border-gray-600">
-                                  {children}{" "}
+                                                                    {children}  
+                                                               {" "}
                                 </td>
                               ),
                             }}
@@ -1243,17 +1591,22 @@ function Chat() {
                         ) : (
                           getMessageContent(message.content)
                         )}{" "}
+                                             {" "}
                       </div>
-                      {/* Citations */}{" "}
+                                            {/* Citations */}                  
+                         {" "}
                       {message.role === "assistant" &&
                         index === messages.length - 1 &&
                         citations.length > 0 &&
                         !loading && (
                           <div className="mt-3 space-y-2">
-                            {" "}
+                                                                               
+                               {" "}
                             <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                              Sources{" "}
+                                                            Sources            
+                                             {" "}
                             </p>{" "}
+                                                       {" "}
                             {citations.map((citation, citationIndex) => (
                               <div
                                 key={
@@ -1263,26 +1616,38 @@ function Chat() {
                                 }
                                 className="rounded-lg border border-gray-200 bg-white p-3 text-xs shadow-sm dark:border-gray-700 dark:bg-gray-900"
                               >
-                                {" "}
+                                                                               
+                                               {" "}
                                 <div className="flex items-center justify-between gap-3">
-                                  {" "}
+                                                                               
+                                                       {" "}
                                   <p className="font-medium text-gray-900 dark:text-white">
-                                    [{citationIndex + 1}]{" "}
-                                    {citation.sourceTitle}{" "}
+                                                                        [
+                                    {citationIndex + 1}]                        
+                                                {citation.sourceTitle}          
+                                                           {" "}
                                   </p>{" "}
+                                                                   {" "}
                                   {typeof citation.score === "number" && (
                                     <span className="shrink-0 text-gray-500 dark:text-gray-400">
-                                      {" "}
-                                      {(citation.score * 100).toFixed(1)}%{" "}
+                                                                               
+                                                                       {" "}
+                                      {(citation.score * 100).toFixed(1)}%      
+                                                                   {" "}
                                     </span>
                                   )}{" "}
+                                                                 {" "}
                                 </div>{" "}
+                                                               {" "}
                                 <p className="mt-1 text-gray-500 dark:text-gray-400">
-                                  {" "}
-                                  {citation.sourceType}{" "}
+                                                                               
+                                                        {citation.sourceType}  
+                                                                 {" "}
                                   {citation.chunkIndex !== undefined &&
                                     ` • Chunk ${citation.chunkIndex}`}{" "}
+                                                                 {" "}
                                 </p>{" "}
+                                                               {" "}
                                 {citation.url && (
                                   <a
                                     href={citation.url}
@@ -1290,53 +1655,67 @@ function Chat() {
                                     rel="noreferrer"
                                     className="mt-1 block truncate text-purple-600 hover:underline dark:text-purple-400"
                                   >
-                                    {" "}
-                                    {citation.url}{" "}
+                                                                               
+                                                                {citation.url}  
+                                                                   {" "}
                                   </a>
                                 )}{" "}
+                                                               {" "}
                                 {citation.excerpt && (
                                   <p className="mt-2 line-clamp-3 text-gray-600 dark:text-gray-300">
-                                    {" "}
-                                    {citation.excerpt}{" "}
+                                                                               
+                                                               {" "}
+                                    {citation.excerpt}                          
+                                           {" "}
                                   </p>
                                 )}{" "}
+                                                             {" "}
                               </div>
                             ))}{" "}
+                                                     {" "}
                           </div>
                         )}{" "}
+                                         {" "}
                     </div>{" "}
+                                     {" "}
                   </div>
                 ))}{" "}
+                               {" "}
                 {loading && (
                   <div className="flex justify-start">
-                    {" "}
+                                                           {" "}
                     <div className="rounded-xl bg-gray-100 px-4 py-3 text-sm text-gray-500 dark:bg-gray-800 dark:text-gray-400">
-                      NotebookLLM is thinking...{" "}
+                                            NotebookLLM is thinking...          
+                               {" "}
                     </div>{" "}
+                                     {" "}
                   </div>
                 )}{" "}
+                             {" "}
               </div>
             )}{" "}
+                     {" "}
           </div>
-          {/* Error */}{" "}
+                    {/* Error */}          {" "}
           {error && (
             <div className="border-t border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-900 dark:bg-red-950 dark:text-red-300">
-              {error}{" "}
+                            {error}            {" "}
             </div>
           )}
-          {/* Input */}{" "}
+                    {/* Input */}          {" "}
           <div className="border-t border-gray-200 p-3 dark:border-gray-800 sm:p-4">
-            {/* Controls */}{" "}
+                        {/* Controls */}            {" "}
             <div className="mx-auto mb-3 flex max-w-3xl flex-wrap items-center gap-2">
-              {/* Model Selector */}{" "}
+                            {/* Model Selector */}              {" "}
               <div className="flex items-center gap-2">
-                {" "}
+                                               {" "}
                 <label
                   htmlFor="model-selector"
                   className="text-sm font-medium text-gray-600 dark:text-gray-300"
                 >
-                  Model{" "}
+                                    Model                {" "}
                 </label>{" "}
+                               {" "}
                 <select
                   id="model-selector"
                   value={model}
@@ -1344,12 +1723,14 @@ function Chat() {
                   disabled={loading}
                   className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 outline-none transition-colors focus:border-purple-500 focus:ring-2 focus:ring-purple-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:focus:border-purple-500 dark:focus:ring-purple-950"
                 >
-                  {" "}
-                  <option value="gpt-4o-mini">GPT-4o Mini</option>
-                  <option value="gpt-4o">GPT-4o</option>{" "}
+                                                     {" "}
+                  <option value="gpt-4o-mini">GPT-4o Mini</option>             
+                      <option value="gpt-4o">GPT-4o</option>              
+                   {" "}
                 </select>{" "}
+                             {" "}
               </div>
-              {/* Web Search */}{" "}
+                            {/* Web Search */}              {" "}
               <button
                 type="button"
                 onClick={() => setWebSearch((current) => !current)}
@@ -1360,13 +1741,15 @@ function Chat() {
                     : "border-gray-300 bg-white text-gray-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
                 }`}
               >
-                <span>🌐</span>{" "}
-                <span>Web Search {webSearch ? "On" : "Off"}</span>{" "}
+                                <span>🌐</span>                {" "}
+                <span>Web Search {webSearch ? "On" : "Off"}</span>            
+                 {" "}
               </button>{" "}
+                         {" "}
             </div>
-            {/* Input */}{" "}
+                        {/* Input */}            {" "}
             <div className="mx-auto flex max-w-3xl gap-2 sm:gap-3">
-              {" "}
+                                         {" "}
               <input
                 type="text"
                 value={input}
@@ -1376,18 +1759,25 @@ function Chat() {
                 placeholder="Ask NotebookLLM anything..."
                 className="min-w-0 flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none placeholder:text-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-purple-500 dark:focus:ring-purple-950 sm:px-4 sm:py-3"
               />{" "}
+                           {" "}
               <button
                 type="button"
                 onClick={handleSend}
                 disabled={loading || !input.trim()}
                 className="shrink-0 rounded-lg bg-purple-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-50 sm:px-5 sm:py-3 sm:text-base"
               >
-                {loading ? "Sending..." : "Send"}{" "}
+                                {loading ? "Sending..." : "Send"}            
+                 {" "}
               </button>{" "}
+                         {" "}
             </div>{" "}
+                     {" "}
           </div>{" "}
+                 {" "}
         </div>{" "}
+             {" "}
       </div>{" "}
+         {" "}
     </div>
   );
 }

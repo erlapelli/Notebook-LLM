@@ -6,6 +6,7 @@ import {
   getConversations,
   createConversation,
   deleteConversation,
+  updateConversation,
 } from "../controllers/chat.controller.js";
 
 const chatRoutes = Router();
@@ -37,6 +38,14 @@ chatRoutes.post(
 chatRoutes.get(
   "/workspaces/:workspaceId/conversations/:conversationId/messages",
   asyncHandler(getConversationMessages),
+);
+
+/**
+ * Rename chat
+ */
+chatRoutes.patch(
+  "/workspaces/:workspaceId/conversations/:conversationId",
+  asyncHandler(updateConversation),
 );
 
 /**

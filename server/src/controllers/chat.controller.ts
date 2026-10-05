@@ -6,6 +6,7 @@ import {
   listConversationsForWorkspace,
   createConversationForWorkspace,
   deleteConversationForWorkspace,
+  updateConversationForWorkspace,
 } from "../services/chat.services.js";
 
 import { ValidationError } from "../types/app-error.js";
@@ -115,6 +116,38 @@ export async function getConversationMessages(req: Request, res: Response) {
   );
 
   res.json(messages);
+}
+
+export async function updateConversation(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  const { workspaceId, conversationId } = req.params;
+
+  if (typeof workspaceId !== "string" || typeof conversationId !== "string") {
+    res.status(400).json({
+      message: "Invalid workspace or conversation ID",
+    });
+    return;
+  }
+
+  const { title } = req.body;
+
+  if (typeof title !== "string" || !title.trim()) {
+    res.status(400).json({
+      message: "Conversation title is required",
+    });
+    return;
+  }
+
+  const updatedConversation = await updateConversationForWorkspace(
+    workspaceId,
+    conversationId,
+    req.session.user.id,
+    title.trim(),
+  );
+
+  res.json(updatedConversation);
 }
 
 /**

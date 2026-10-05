@@ -1,3 +1,5 @@
+
+
 const API_URL = import.meta.env.VITE_API_URL;
 
 export async function apiRequest(endpoint, options = {}) {
@@ -12,6 +14,11 @@ export async function apiRequest(endpoint, options = {}) {
 
     if (!response.ok) {
         throw new Error(`API request failed: ${response.status}`);
+    }
+
+    // DELETE endpoints may return 204 No Content
+    if (response.status === 204) {
+        return null;
     }
 
     return response.json();
@@ -109,4 +116,25 @@ export async function deleteSource(workspaceId, sourceId) {
   if (!response.ok) {
     throw new Error(`API request failed: ${response.status}`);
   }
+}
+
+
+export async function bulkDeleteSources(workspaceId, sourceIds) {
+    const response = await fetch(
+        `${API_URL}/api/workspaces/${workspaceId}/sources/bulk-delete`,
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            credentials: "include",
+            body: JSON.stringify({
+                sourceIds,
+            }),
+        },
+    );
+
+    if (!response.ok) {
+        throw new Error(`API request failed: ${response.status}`);
+    }
 }
