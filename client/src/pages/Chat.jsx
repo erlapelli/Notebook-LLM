@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import ReactMarkdown from "react-markdown";
 
@@ -50,6 +50,7 @@ function getMessageContent(content) {
 
 function Chat() {
   const { workspaceId } = useParams();
+  const navigate = useNavigate();
 
   const [input, setInput] = useState("");
 
@@ -109,7 +110,6 @@ function Chat() {
 
 
 
- * Load the conversation list.
 
 
 
@@ -117,7 +117,8 @@ function Chat() {
 
 
 
- *
+
+ * Load the conversation list.
 
 
 
@@ -125,7 +126,6 @@ function Chat() {
 
 
 
- * We keep the previous conversation id in localStorage only as a
 
 
 
@@ -133,7 +133,8 @@ function Chat() {
 
 
 
- * convenience so the user can return to the last opened chat.
+
+ *
 
 
 
@@ -141,7 +142,47 @@ function Chat() {
 
 
 
- */
+
+
+
+
+
+
+
+
+ * We keep the previous conversation id in localStorage only as a
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ * convenience so the user can return to the last opened chat.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ */
 
   const loadConversations = async (selectSavedConversation = true) => {
     if (!workspaceId) return [];
@@ -213,7 +254,6 @@ function Chat() {
 
 
 
-   * Initial conversation history.
 
 
 
@@ -229,7 +269,40 @@ function Chat() {
 
 
 
-   */
+
+   * Initial conversation history.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   */
 
   useEffect(() => {
     loadConversations(true);
@@ -249,7 +322,6 @@ function Chat() {
 
 
 
-   * Load messages whenever the selected conversation changes.
 
 
 
@@ -265,7 +337,40 @@ function Chat() {
 
 
 
-   */
+
+   * Load messages whenever the selected conversation changes.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   */
 
   useEffect(() => {
     const loadConversation = async () => {
@@ -337,7 +442,6 @@ function Chat() {
 
 
 
-   * Create a new empty conversation.
 
 
 
@@ -353,7 +457,8 @@ function Chat() {
 
 
 
-   *
+
+   * Create a new empty conversation.
 
 
 
@@ -369,7 +474,6 @@ function Chat() {
 
 
 
-   * This is the ChatGPT-style "+ New Chat" action.
 
 
 
@@ -385,7 +489,72 @@ function Chat() {
 
 
 
-   */
+
+   *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   * This is the ChatGPT-style "+ New Chat" action.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   */
 
   const handleNewChat = async () => {
     if (!workspaceId || loading || creatingChat) return;
@@ -461,7 +630,6 @@ function Chat() {
 
 
 
-   * Open an existing conversation from the sidebar.
 
 
 
@@ -477,7 +645,40 @@ function Chat() {
 
 
 
-   */
+
+   * Open an existing conversation from the sidebar.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   */
 
   const handleSelectConversation = (id) => {
     if (loading || id === conversationId) return;
@@ -507,7 +708,6 @@ function Chat() {
 
 
 
-   * Delete a conversation.
 
 
 
@@ -523,7 +723,40 @@ function Chat() {
 
 
 
-   */
+
+   * Delete a conversation.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   */
 
   const handleStartEdit = (event, conversation) => {
     event.stopPropagation();
@@ -691,7 +924,6 @@ function Chat() {
 
 
 
-   * Send a message to the existing backend chat endpoint.
 
 
 
@@ -707,7 +939,8 @@ function Chat() {
 
 
 
-   *
+
+   * Send a message to the existing backend chat endpoint.
 
 
 
@@ -723,7 +956,6 @@ function Chat() {
 
 
 
-   * If conversationId is null, the backend automatically creates a
 
 
 
@@ -739,7 +971,8 @@ function Chat() {
 
 
 
-   * conversation from the first user message.
+
+   *
 
 
 
@@ -755,7 +988,87 @@ function Chat() {
 
 
 
-   */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   * If conversationId is null, the backend automatically creates a
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   * conversation from the first user message.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   */
 
   const handleSend = async () => {
     const text = input.trim();
@@ -839,7 +1152,6 @@ function Chat() {
 
 
 
-       * The backend creates a conversation automatically when
 
 
 
@@ -855,7 +1167,8 @@ function Chat() {
 
 
 
-       * conversationId is not provided.
+
+       * The backend creates a conversation automatically when
 
 
 
@@ -871,7 +1184,55 @@ function Chat() {
 
 
 
-       */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+       * conversationId is not provided.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+       */
 
       const newConversationId = response.headers.get("X-Conversation-Id");
 
@@ -899,7 +1260,6 @@ function Chat() {
 
 
 
-       * Add an empty assistant message first.
 
 
 
@@ -915,7 +1275,8 @@ function Chat() {
 
 
 
-       * We update it as text-delta events arrive.
+
+       * Add an empty assistant message first.
 
 
 
@@ -931,7 +1292,55 @@ function Chat() {
 
 
 
-       */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+       * We update it as text-delta events arrive.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+       */
 
       setMessages((currentMessages) => [
         ...currentMessages,
@@ -1026,7 +1435,6 @@ function Chat() {
 
 
 
-       * The backend has now saved the assistant message and citations.
 
 
 
@@ -1042,7 +1450,8 @@ function Chat() {
 
 
 
-       * Reload the saved conversation so the UI stays in sync with
+
+       * The backend has now saved the assistant message and citations.
 
 
 
@@ -1058,7 +1467,6 @@ function Chat() {
 
 
 
-       * PostgreSQL.
 
 
 
@@ -1074,7 +1482,72 @@ function Chat() {
 
 
 
-       */
+
+       * Reload the saved conversation so the UI stays in sync with
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+       * PostgreSQL.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+       */
 
       if (newConversationId) {
         const messagesResponse = await fetch(
@@ -1115,7 +1588,6 @@ function Chat() {
 
 
 
-         * Refresh sidebar because the conversation title and
 
 
 
@@ -1131,7 +1603,8 @@ function Chat() {
 
 
 
-         * updatedAt may have changed after the message.
+
+         * Refresh sidebar because the conversation title and
 
 
 
@@ -1147,7 +1620,55 @@ function Chat() {
 
 
 
-         */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+         * updatedAt may have changed after the message.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+         */
 
         const updatedConversations = await loadConversations(false);
 
@@ -1179,605 +1700,535 @@ function Chat() {
   };
 
   return (
-    <div className="mx-auto flex h-[calc(100vh-5rem)] w-full max-w-7xl flex-col sm:h-[calc(100vh-7rem)]">
-            {/* Header */}      {" "}
-      <div className="mb-4 sm:mb-5">
-                       {" "}
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white sm:text-3xl">
-                    Chat with NotebookLLM        {" "}
-        </h1>{" "}
-               {" "}
-        <p className="mt-1 text-sm text-gray-600 dark:text-gray-300 sm:text-base">
-                    Ask questions about your learning materials.        {" "}
-        </p>{" "}
-             {" "}
-      </div>
-            {/* Main Chat Layout */}      {" "}
-      <div className="relative flex min-h-0 flex-1 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
-                {/* Conversation Sidebar */}         {/* Open Sidebar Button */}
-               {" "}
-        {!sidebarOpen && (
-          <button
-            type="button"
-            onClick={() => setSidebarOpen(true)}
-            title="Open sidebar"
-            aria-label="Open sidebar"
-            className="absolute left-3 top-3 z-40 rounded-lg bg-purple-600 px-3 py-2 text-lg text-white shadow-md transition-colors hover:bg-purple-700"
-          >
-                    ☰        {" "}
-          </button>
-        )}
-               {" "}
-        {sidebarOpen && (
-          <aside className="flex w-72 shrink-0 flex-col border-r border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-950">
-                                   {" "}
-            <div className="flex items-center gap-2 border-b border-gray-200 p-3 dark:border-gray-800">
-                                         {" "}
+    <div className="min-h-[calc(100vh-5rem)] w-full bg-gray-50 px-0 py-0 dark:bg-gray-950 sm:min-h-[calc(100vh-7rem)]">
+      <div className="min-h-screen w-full bg-gray-50 px-3 pb-6 pt-6 dark:bg-gray-950 sm:px-6 sm:pb-8 sm:pt-8">
+        <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-7xl flex-col">
+          <div className="mb-5 flex items-start justify-between gap-3 sm:mb-6">
+            <div className="min-w-0">
               <button
                 type="button"
-                onClick={() => setSidebarOpen(false)}
-                title="Close sidebar"
-                className="rounded-lg px-2.5 py-2 text-lg text-gray-600 hover:bg-gray-200 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
+                onClick={() => navigate(`/workspaces/${workspaceId}`)}
+                className="mb-3 inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-100 hover:text-gray-950 focus:outline-none focus:ring-2 focus:ring-purple-500/30 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
               >
-                                ☰              {" "}
-              </button>{" "}
-                           {" "}
-              <button
-                type="button"
-                onClick={handleNewChat}
-                disabled={loading || creatingChat}
-                className="flex-1 rounded-lg bg-purple-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                                {creatingChat ? "Creating..." : "+ New Chat"}  
-                           {" "}
-              </button>{" "}
-                         {" "}
-            </div>{" "}
-                       {" "}
-            <div className="flex-1 overflow-y-auto p-2">
-                                         {" "}
-              {historyLoading ? (
-                <p className="px-3 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
-                                    Loading chats...                {" "}
-                </p>
-              ) : conversations.length === 0 ? (
-                <p className="px-3 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
-                                    No chats yet.                {" "}
-                </p>
-              ) : (
-                <div className="space-y-1">
-                                                     {" "}
-                  {conversations.map((conversation) => (
-                    <div
-                      key={conversation.id}
-                      className={`group relative flex items-center gap-1 rounded-lg ${
-                        conversation.id === conversationId
-                          ? "bg-purple-100 dark:bg-purple-950/50"
-                          : "hover:bg-gray-100 dark:hover:bg-gray-900"
-                      }`}
-                    >
-                                                                 {" "}
-                      {editingChatId === conversation.id ? (
-                        <div className="flex min-w-0 flex-1 flex-col gap-2 p-2">
-                                                                             {" "}
-                          <input
-                            autoFocus
-                            type="text"
-                            value={editingTitle}
-                            onChange={(event) =>
-                              setEditingTitle(event.target.value)
-                            }
-                            onKeyDown={(event) => {
-                              if (event.key === "Enter") {
-                                handleSaveTitle(event, conversation.id);
-                              }
+                <span aria-hidden="true">←</span>
+                Back to Workspace
+              </button>
 
-                              if (event.key === "Escape") {
-                                handleCancelEdit(event);
-                              }
-                            }}
-                            className="w-full rounded-md border border-purple-300 bg-white px-2.5 py-2 text-sm text-gray-900 outline-none focus:border-purple-500 dark:border-purple-700 dark:bg-gray-800 dark:text-white"
-                          />{" "}
-                                                   {" "}
-                          <div className="flex gap-2">
-                                                                               
-                               {" "}
-                            <button
-                              type="button"
-                              onClick={(event) =>
-                                handleSaveTitle(event, conversation.id)
-                              }
-                              disabled={savingTitle}
-                              className="rounded-md bg-purple-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-purple-700 disabled:opacity-50"
-                            >
-                                                                               
-                                        {savingTitle ? "Saving..." : "Save"}    
-                                                     {" "}
-                            </button>{" "}
-                                                       {" "}
-                            <button
-                              type="button"
-                              onClick={handleCancelEdit}
-                              disabled={savingTitle}
-                              className="rounded-md border border-gray-300 px-2.5 py-1 text-xs font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
-                            >
-                                                            Cancel              
-                                           {" "}
-                            </button>{" "}
-                                                     {" "}
-                          </div>{" "}
-                                                 {" "}
-                        </div>
-                      ) : (
-                        <>
-                                                                             {" "}
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleSelectConversation(conversation.id)
-                            }
-                            disabled={loading}
-                            className="min-w-0 flex-1 px-3 py-2.5 text-left text-sm"
-                          >
-                                                                               
-                               {" "}
-                            <span className="block truncate font-medium text-gray-800 dark:text-gray-200">
-                                                                               
-                                        {formatConversationTitle(conversation)}{" "}
-                                                         {" "}
-                            </span>{" "}
-                                                       {" "}
-                            <span className="mt-1 block text-xs text-gray-400 dark:text-gray-500">
-                                                                               
-                                       {" "}
-                              {new Date(
-                                conversation.updatedAt,
-                              ).toLocaleDateString()}{" "}
-                                                         {" "}
-                            </span>{" "}
-                                                     {" "}
-                          </button>{" "}
-                                                   {" "}
-                          <div
-                            ref={
-                              openMenuId === conversation.id ? menuRef : null
-                            }
-                            className="relative mr-1"
-                          >
-                                                                               
-                               {" "}
-                            <button
-                              type="button"
-                              title="Chat options"
-                              onClick={(event) => {
-                                event.stopPropagation();
+              <h1 className="truncate text-2xl font-bold tracking-tight text-gray-950 dark:text-white sm:text-3xl">
+                Chat with NotebookLLM
+              </h1>
+              <p className="mt-1 text-sm text-gray-600 dark:text-gray-400 sm:text-base">
+                Ask questions about your learning materials.
+              </p>
+            </div>
 
-                                setOpenMenuId((current) =>
-                                  current === conversation.id
-                                    ? null
-                                    : conversation.id,
-                                );
-                              }}
-                              className="rounded-md px-2 py-1.5 text-lg leading-none text-gray-400 opacity-0 hover:bg-gray-200 hover:text-gray-700 group-hover:opacity-100 dark:hover:bg-gray-800 dark:hover:text-gray-200"
-                            >
-                                                            ⋮                  
-                                       {" "}
-                            </button>{" "}
-                                                       {" "}
-                            {openMenuId === conversation.id && (
-                              <div className="absolute right-0 top-full z-30 mt-1 w-36 overflow-hidden rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800">
-                                                                               
-                                               {" "}
-                                <button
-                                  type="button"
-                                  onClick={(event) =>
-                                    handleStartEdit(event, conversation)
-                                  }
-                                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
-                                >
-                                                                               
-                                                        <span>✏️</span>         
-                                                          <span>Edit</span>    
-                                                             {" "}
-                                </button>{" "}
-                                                               {" "}
-                                <button
-                                  type="button"
-                                  onClick={(event) =>
-                                    handleDeleteConversation(
-                                      event,
-
-                                      conversation.id,
-                                    )
-                                  }
-                                  disabled={deletingChatId === conversation.id}
-                                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40"
-                                >
-                                                                               
-                                                        <span>🗑️</span>         
-                                                          <span>Delete</span>  
-                                                               {" "}
-                                </button>{" "}
-                                                             {" "}
-                              </div>
-                            )}{" "}
-                                                     {" "}
-                          </div>{" "}
-                                                 {" "}
-                        </>
-                      )}{" "}
-                                         {" "}
-                    </div>
-                  ))}{" "}
-                                 {" "}
-                </div>
-              )}{" "}
-                         {" "}
-            </div>{" "}
-                     {" "}
-          </aside>
-        )}
-                {/* Chat Content */}        {" "}
-        <div className="flex min-w-0 flex-1 flex-col">
-                    {/* Mobile New Chat */}          {" "}
-          <div className="border-b border-gray-200 p-3 dark:border-gray-800 md:hidden">
-                                   {" "}
-            <button
-              type="button"
-              onClick={handleNewChat}
-              disabled={loading || creatingChat}
-              className="w-full rounded-lg bg-purple-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-                            {creatingChat ? "Creating..." : "+ New Chat"}      
-                   {" "}
-            </button>{" "}
-                     {" "}
+            <div className="hidden shrink-0 items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 sm:flex">
+              <span className="h-2 w-2 rounded-full bg-green-500" />
+              Notebook ready
+            </div>
           </div>
-                    {/* Messages */}          {" "}
-          <div className="flex-1 overflow-y-auto p-4 sm:p-6">
-                                   {" "}
-            {messages.length === 0 ? (
-              <div className="flex h-full items-center justify-center">
-                                               {" "}
-                <div className="max-w-md px-2 text-center">
-                                                     {" "}
-                  <div className="mb-4 text-4xl sm:text-5xl">💬</div>          
-                         {" "}
-                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white sm:text-xl">
-                                        Start a conversation                
-                     {" "}
-                  </h2>{" "}
-                                   {" "}
-                  <p className="mt-2 text-sm leading-6 text-gray-500 dark:text-gray-400 sm:text-base">
-                                        Ask NotebookLLM a question about your
-                    sources and start                     learning.            
-                         {" "}
-                  </p>{" "}
-                                 {" "}
-                </div>{" "}
-                             {" "}
-              </div>
-            ) : (
-              <div className="mx-auto flex max-w-3xl flex-col gap-4">
-                                               {" "}
-                {messages.map((message, index) => (
-                  <div
-                    key={index}
-                    className={`flex ${
-                      message.role === "user" ? "justify-end" : "justify-start"
-                    }`}
+
+          <div className="relative flex min-h-0 flex-1 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+            {!sidebarOpen && (
+              <button
+                type="button"
+                onClick={() => setSidebarOpen(true)}
+                title="Open conversation history"
+                aria-label="Open conversation history"
+                className="absolute left-3 top-3 z-40 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
+              >
+                ☰
+              </button>
+            )}
+
+            {sidebarOpen && (
+              <aside className="flex w-72 shrink-0 flex-col border-r border-gray-200 bg-gray-50/80 dark:border-gray-800 dark:bg-gray-950/70">
+                <div className="flex items-center gap-2 border-b border-gray-200 p-3 dark:border-gray-800">
+                  <button
+                    type="button"
+                    onClick={() => setSidebarOpen(false)}
+                    title="Close conversation history"
+                    aria-label="Close conversation history"
+                    className="rounded-lg border border-gray-200 bg-white px-2.5 py-2 text-sm text-gray-600 transition hover:bg-gray-100 hover:text-gray-900 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
                   >
-                                                           {" "}
-                    <div className="max-w-[85%] sm:max-w-[75%]">
-                                                                 {" "}
+                    ☰
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleNewChat}
+                    disabled={loading || creatingChat}
+                    className="flex-1 rounded-lg bg-purple-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {creatingChat ? "Creating..." : "+ New Chat"}
+                  </button>
+                </div>
+
+                <div className="border-b border-gray-200 px-3 py-2.5 dark:border-gray-800">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                    Conversation history
+                  </p>
+                </div>
+
+                <div className="flex-1 overflow-y-auto p-2.5">
+                  {historyLoading ? (
+                    <div className="space-y-2 p-1">
+                      {[1, 2, 3, 4].map((item) => (
+                        <div
+                          key={item}
+                          className="h-14 animate-pulse rounded-lg bg-gray-200 dark:bg-gray-800"
+                        />
+                      ))}
+                    </div>
+                  ) : conversations.length === 0 ? (
+                    <div className="px-3 py-10 text-center">
+                      <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-purple-100 text-purple-600 dark:bg-purple-950/50 dark:text-purple-300">
+                        +
+                      </div>
+                      <p className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                        No chats yet
+                      </p>
+                      <p className="mt-1 text-xs leading-5 text-gray-500 dark:text-gray-400">
+                        Start a new conversation to begin.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-1.5">
+                      {conversations.map((conversation) => (
+                        <div
+                          key={conversation.id}
+                          className={`group relative flex items-center gap-1 rounded-xl border transition ${
+                            conversation.id === conversationId
+                              ? "border-purple-200 bg-purple-50 dark:border-purple-900/70 dark:bg-purple-950/40"
+                              : "border-transparent hover:border-gray-200 hover:bg-white dark:hover:border-gray-800 dark:hover:bg-gray-900"
+                          }`}
+                        >
+                          {editingChatId === conversation.id ? (
+                            <div className="flex min-w-0 flex-1 flex-col gap-2 p-2.5">
+                              <input
+                                autoFocus
+                                type="text"
+                                value={editingTitle}
+                                onChange={(event) =>
+                                  setEditingTitle(event.target.value)
+                                }
+                                onKeyDown={(event) => {
+                                  if (event.key === "Enter") {
+                                    handleSaveTitle(event, conversation.id);
+                                  }
+                                  if (event.key === "Escape") {
+                                    handleCancelEdit(event);
+                                  }
+                                }}
+                                className="w-full rounded-lg border border-purple-300 bg-white px-2.5 py-2 text-sm text-gray-900 outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100 dark:border-purple-700 dark:bg-gray-800 dark:text-white dark:focus:ring-purple-950"
+                              />
+                              <div className="flex gap-2">
+                                <button
+                                  type="button"
+                                  onClick={(event) =>
+                                    handleSaveTitle(event, conversation.id)
+                                  }
+                                  disabled={savingTitle}
+                                  className="rounded-lg bg-purple-600 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-purple-700 disabled:opacity-50"
+                                >
+                                  {savingTitle ? "Saving..." : "Save"}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={handleCancelEdit}
+                                  disabled={savingTitle}
+                                  className="rounded-lg border border-gray-300 px-2.5 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleSelectConversation(conversation.id)
+                                }
+                                disabled={loading}
+                                className="min-w-0 flex-1 px-3 py-2.5 text-left"
+                              >
+                                <span className="block truncate text-sm font-medium text-gray-800 dark:text-gray-200">
+                                  {formatConversationTitle(conversation)}
+                                </span>
+                                <span className="mt-1 block text-xs text-gray-400 dark:text-gray-500">
+                                  {new Date(
+                                    conversation.updatedAt,
+                                  ).toLocaleDateString()}
+                                </span>
+                              </button>
+
+                              <div
+                                ref={
+                                  openMenuId === conversation.id
+                                    ? menuRef
+                                    : null
+                                }
+                                className="relative mr-1"
+                              >
+                                <button
+                                  type="button"
+                                  title="Chat options"
+                                  aria-label="Chat options"
+                                  onClick={(event) => {
+                                    event.stopPropagation();
+                                    setOpenMenuId((current) =>
+                                      current === conversation.id
+                                        ? null
+                                        : conversation.id,
+                                    );
+                                  }}
+                                  className="rounded-lg px-2 py-1.5 text-lg leading-none text-gray-400 opacity-0 transition hover:bg-gray-200 hover:text-gray-700 group-hover:opacity-100 focus:opacity-100 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+                                >
+                                  ⋮
+                                </button>
+
+                                {openMenuId === conversation.id && (
+                                  <div className="absolute right-0 top-full z-30 mt-1 w-36 overflow-hidden rounded-xl border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+                                    <button
+                                      type="button"
+                                      onClick={(event) =>
+                                        handleStartEdit(event, conversation)
+                                      }
+                                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
+                                    >
+                                      <span>✏️</span>
+                                      <span>Edit</span>
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={(event) =>
+                                        handleDeleteConversation(
+                                          event,
+                                          conversation.id,
+                                        )
+                                      }
+                                      disabled={
+                                        deletingChatId === conversation.id
+                                      }
+                                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 disabled:opacity-50 dark:text-red-400 dark:hover:bg-red-950/40"
+                                    >
+                                      <span>🗑️</span>
+                                      <span>
+                                        {deletingChatId === conversation.id
+                                          ? "Deleting..."
+                                          : "Delete"}
+                                      </span>
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </aside>
+            )}
+
+            <div className="flex min-w-0 flex-1 flex-col bg-white dark:bg-gray-900">
+              <div className="flex items-center gap-2 border-b border-gray-200 p-3 dark:border-gray-800 md:hidden">
+                {!sidebarOpen && (
+                  <button
+                    type="button"
+                    onClick={() => setSidebarOpen(true)}
+                    className="rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 dark:border-gray-700 dark:text-gray-200"
+                  >
+                    ☰
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={handleNewChat}
+                  disabled={loading || creatingChat}
+                  className="flex-1 rounded-lg bg-purple-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {creatingChat ? "Creating..." : "+ New Chat"}
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+                {messages.length === 0 ? (
+                  <div className="flex h-full items-center justify-center">
+                    <div className="max-w-lg px-4 text-center">
+                      <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-purple-100 text-2xl text-purple-600 dark:bg-purple-950/50 dark:text-purple-300">
+                        ✦
+                      </div>
+                      <h2 className="text-xl font-semibold tracking-tight text-gray-950 dark:text-white">
+                        Start a conversation
+                      </h2>
+                      <p className="mt-2 text-sm leading-6 text-gray-500 dark:text-gray-400 sm:text-base">
+                        Ask NotebookLLM a question about your sources and start
+                        learning.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mx-auto flex max-w-3xl flex-col gap-5">
+                    {messages.map((message, index) => (
                       <div
-                        className={`rounded-xl px-4 py-3 text-sm leading-6 ${
+                        key={index}
+                        className={`flex ${
                           message.role === "user"
-                            ? "bg-purple-600 text-white"
-                            : "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-100"
+                            ? "justify-end"
+                            : "justify-start"
                         }`}
                       >
-                                                                       {" "}
-                        {message.role === "assistant" ? (
-                          <ReactMarkdown
-                            remarkPlugins={[remarkGfm]}
-                            components={{
-                              h1: ({ children }) => (
-                                <h1 className="mb-3 text-xl font-bold">
-                                                                    {children}  
-                                                               {" "}
-                                </h1>
-                              ),
+                        <div
+                          className={`max-w-[92%] sm:max-w-[82%] ${
+                            message.role === "user" ? "sm:max-w-[75%]" : ""
+                          }`}
+                        >
+                          <div
+                            className={`rounded-2xl px-4 py-3 text-sm leading-7 shadow-sm ${
+                              message.role === "user"
+                                ? "rounded-br-md bg-purple-600 text-white"
+                                : "rounded-bl-md border border-gray-200 bg-gray-50 text-gray-900 dark:border-gray-800 dark:bg-gray-800/80 dark:text-gray-100"
+                            }`}
+                          >
+                            {message.role === "assistant" ? (
+                              <ReactMarkdown
+                                remarkPlugins={[remarkGfm]}
+                                components={{
+                                  h1: ({ children }) => (
+                                    <h1 className="mb-3 text-xl font-bold">
+                                      {children}
+                                    </h1>
+                                  ),
+                                  h2: ({ children }) => (
+                                    <h2 className="mb-3 text-lg font-bold">
+                                      {children}
+                                    </h2>
+                                  ),
+                                  h3: ({ children }) => (
+                                    <h3 className="mb-2 text-base font-bold">
+                                      {children}
+                                    </h3>
+                                  ),
+                                  p: ({ children }) => (
+                                    <p className="mb-3 last:mb-0">{children}</p>
+                                  ),
+                                  ul: ({ children }) => (
+                                    <ul className="mb-3 list-disc space-y-1 pl-5">
+                                      {children}
+                                    </ul>
+                                  ),
+                                  ol: ({ children }) => (
+                                    <ol className="mb-3 list-decimal space-y-1 pl-5">
+                                      {children}
+                                    </ol>
+                                  ),
+                                  li: ({ children }) => <li>{children}</li>,
+                                  strong: ({ children }) => (
+                                    <strong className="font-semibold">
+                                      {children}
+                                    </strong>
+                                  ),
+                                  code: ({ inline, children }) => {
+                                    if (inline) {
+                                      return (
+                                        <code className="rounded bg-gray-200 px-1.5 py-0.5 font-mono text-xs dark:bg-gray-700">
+                                          {children}
+                                        </code>
+                                      );
+                                    }
 
-                              h2: ({ children }) => (
-                                <h2 className="mb-3 text-lg font-bold">
-                                                                    {children}  
-                                                               {" "}
-                                </h2>
-                              ),
-
-                              h3: ({ children }) => (
-                                <h3 className="mb-2 text-base font-bold">
-                                                                    {children}  
-                                                               {" "}
-                                </h3>
-                              ),
-
-                              p: ({ children }) => (
-                                <p className="mb-3 last:mb-0">{children}</p>
-                              ),
-
-                              ul: ({ children }) => (
-                                <ul className="mb-3 list-disc space-y-1 pl-5">
-                                                                    {children}  
-                                                               {" "}
-                                </ul>
-                              ),
-
-                              ol: ({ children }) => (
-                                <ol className="mb-3 list-decimal space-y-1 pl-5">
-                                                                    {children}  
-                                                               {" "}
-                                </ol>
-                              ),
-
-                              li: ({ children }) => <li>{children}</li>,
-
-                              strong: ({ children }) => (
-                                <strong className="font-semibold">
-                                                                    {children}  
-                                                               {" "}
-                                </strong>
-                              ),
-
-                              code: ({ inline, children }) => {
-                                if (inline) {
-                                  return (
-                                    <code className="rounded bg-gray-200 px-1.5 py-0.5 font-mono text-xs dark:bg-gray-700">
-                                                                               
-                                                                       {" "}
-                                      {children}                                
-                                         {" "}
-                                    </code>
-                                  );
-                                }
-
-                                return (
-                                  <pre className="my-3 overflow-x-auto rounded-lg bg-gray-900 p-4 text-sm text-gray-100">
-                                                                               
-                                                               {" "}
-                                    <code>{children}</code>                    
-                                                 {" "}
-                                  </pre>
-                                );
-                              },
-
-                              blockquote: ({ children }) => (
-                                <blockquote className="my-3 border-l-4 border-purple-400 pl-4 italic text-gray-600 dark:text-gray-300">
-                                                                    {children}  
-                                                               {" "}
-                                </blockquote>
-                              ),
-
-                              table: ({ children }) => (
-                                <div className="my-3 overflow-x-auto">
-                                                                               
-                                                       {" "}
-                                  <table className="w-full border-collapse text-sm">
-                                                                               
-                                                                {children}      
-                                                               {" "}
-                                  </table>{" "}
-                                                                 {" "}
-                                </div>
-                              ),
-
-                              th: ({ children }) => (
-                                <th className="border border-gray-300 bg-gray-200 px-3 py-2 text-left font-semibold dark:border-gray-600 dark:bg-gray-700">
-                                                                    {children}  
-                                                               {" "}
-                                </th>
-                              ),
-
-                              td: ({ children }) => (
-                                <td className="border border-gray-300 px-3 py-2 dark:border-gray-600">
-                                                                    {children}  
-                                                               {" "}
-                                </td>
-                              ),
-                            }}
-                            children={getMessageContent(message.content)}
-                          />
-                        ) : (
-                          getMessageContent(message.content)
-                        )}{" "}
-                                             {" "}
-                      </div>
-                                            {/* Citations */}                  
-                         {" "}
-                      {message.role === "assistant" &&
-                        index === messages.length - 1 &&
-                        citations.length > 0 &&
-                        !loading && (
-                          <div className="mt-3 space-y-2">
-                                                                               
-                               {" "}
-                            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                                                            Sources            
-                                             {" "}
-                            </p>{" "}
-                                                       {" "}
-                            {citations.map((citation, citationIndex) => (
-                              <div
-                                key={
-                                  citation.chunkId ||
-                                  citation.url ||
-                                  citationIndex
-                                }
-                                className="rounded-lg border border-gray-200 bg-white p-3 text-xs shadow-sm dark:border-gray-700 dark:bg-gray-900"
-                              >
-                                                                               
-                                               {" "}
-                                <div className="flex items-center justify-between gap-3">
-                                                                               
-                                                       {" "}
-                                  <p className="font-medium text-gray-900 dark:text-white">
-                                                                        [
-                                    {citationIndex + 1}]                        
-                                                {citation.sourceTitle}          
-                                                           {" "}
-                                  </p>{" "}
-                                                                   {" "}
-                                  {typeof citation.score === "number" && (
-                                    <span className="shrink-0 text-gray-500 dark:text-gray-400">
-                                                                               
-                                                                       {" "}
-                                      {(citation.score * 100).toFixed(1)}%      
-                                                                   {" "}
-                                    </span>
-                                  )}{" "}
-                                                                 {" "}
-                                </div>{" "}
-                                                               {" "}
-                                <p className="mt-1 text-gray-500 dark:text-gray-400">
-                                                                               
-                                                        {citation.sourceType}  
-                                                                 {" "}
-                                  {citation.chunkIndex !== undefined &&
-                                    ` • Chunk ${citation.chunkIndex}`}{" "}
-                                                                 {" "}
-                                </p>{" "}
-                                                               {" "}
-                                {citation.url && (
-                                  <a
-                                    href={citation.url}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="mt-1 block truncate text-purple-600 hover:underline dark:text-purple-400"
-                                  >
-                                                                               
-                                                                {citation.url}  
-                                                                   {" "}
-                                  </a>
-                                )}{" "}
-                                                               {" "}
-                                {citation.excerpt && (
-                                  <p className="mt-2 line-clamp-3 text-gray-600 dark:text-gray-300">
-                                                                               
-                                                               {" "}
-                                    {citation.excerpt}                          
-                                           {" "}
-                                  </p>
-                                )}{" "}
-                                                             {" "}
-                              </div>
-                            ))}{" "}
-                                                     {" "}
+                                    return (
+                                      <pre className="my-3 overflow-x-auto rounded-xl bg-gray-900 p-4 text-sm text-gray-100">
+                                        <code>{children}</code>
+                                      </pre>
+                                    );
+                                  },
+                                  blockquote: ({ children }) => (
+                                    <blockquote className="my-3 border-l-4 border-purple-400 pl-4 italic text-gray-600 dark:text-gray-300">
+                                      {children}
+                                    </blockquote>
+                                  ),
+                                  table: ({ children }) => (
+                                    <div className="my-3 overflow-x-auto">
+                                      <table className="w-full border-collapse text-sm">
+                                        {children}
+                                      </table>
+                                    </div>
+                                  ),
+                                  th: ({ children }) => (
+                                    <th className="border border-gray-300 bg-gray-200 px-3 py-2 text-left font-semibold dark:border-gray-600 dark:bg-gray-700">
+                                      {children}
+                                    </th>
+                                  ),
+                                  td: ({ children }) => (
+                                    <td className="border border-gray-300 px-3 py-2 dark:border-gray-600">
+                                      {children}
+                                    </td>
+                                  ),
+                                }}
+                                children={getMessageContent(message.content)}
+                              />
+                            ) : (
+                              getMessageContent(message.content)
+                            )}
                           </div>
-                        )}{" "}
-                                         {" "}
-                    </div>{" "}
-                                     {" "}
+
+                          {message.role === "assistant" &&
+                            index === messages.length - 1 &&
+                            citations.length > 0 &&
+                            !loading && (
+                              <div className="mt-3 rounded-xl border border-gray-200 bg-white p-3 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+                                <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                  Sources
+                                </p>
+
+                                <div className="space-y-2">
+                                  {citations.map((citation, citationIndex) => (
+                                    <div
+                                      key={
+                                        citation.chunkId ||
+                                        citation.url ||
+                                        citationIndex
+                                      }
+                                      className="rounded-lg border border-gray-200 bg-gray-50 p-3 text-xs dark:border-gray-800 dark:bg-gray-950"
+                                    >
+                                      <div className="flex items-start justify-between gap-3">
+                                        <p className="min-w-0 font-semibold text-gray-900 dark:text-white">
+                                          [{citationIndex + 1}]{" "}
+                                          {citation.sourceTitle}
+                                        </p>
+
+                                        {typeof citation.score === "number" && (
+                                          <span className="shrink-0 rounded-full bg-purple-50 px-2 py-0.5 font-medium text-purple-700 dark:bg-purple-950/50 dark:text-purple-300">
+                                            {(citation.score * 100).toFixed(1)}%
+                                          </span>
+                                        )}
+                                      </div>
+
+                                      <p className="mt-1 text-gray-500 dark:text-gray-400">
+                                        {citation.sourceType}
+                                        {citation.chunkIndex !== undefined &&
+                                          ` • Chunk ${citation.chunkIndex}`}
+                                      </p>
+
+                                      {citation.url && (
+                                        <a
+                                          href={citation.url}
+                                          target="_blank"
+                                          rel="noreferrer"
+                                          className="mt-1 block truncate text-purple-600 hover:underline dark:text-purple-400"
+                                        >
+                                          {citation.url}
+                                        </a>
+                                      )}
+
+                                      {citation.excerpt && (
+                                        <p className="mt-2 line-clamp-3 leading-5 text-gray-600 dark:text-gray-300">
+                                          {citation.excerpt}
+                                        </p>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                        </div>
+                      </div>
+                    ))}
+
+                    {loading && (
+                      <div className="flex justify-start">
+                        <div className="rounded-2xl rounded-bl-md border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-500 shadow-sm dark:border-gray-800 dark:bg-gray-800/80 dark:text-gray-400">
+                          <span className="inline-flex items-center gap-2">
+                            <span className="flex gap-1">
+                              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-gray-400" />
+                              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-gray-400 [animation-delay:150ms]" />
+                              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-gray-400 [animation-delay:300ms]" />
+                            </span>
+                            NotebookLLM is thinking...
+                          </span>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                ))}{" "}
-                               {" "}
-                {loading && (
-                  <div className="flex justify-start">
-                                                           {" "}
-                    <div className="rounded-xl bg-gray-100 px-4 py-3 text-sm text-gray-500 dark:bg-gray-800 dark:text-gray-400">
-                                            NotebookLLM is thinking...          
-                               {" "}
-                    </div>{" "}
-                                     {" "}
-                  </div>
-                )}{" "}
-                             {" "}
+                )}
               </div>
-            )}{" "}
-                     {" "}
+
+              {error && (
+                <div className="border-t border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-900 dark:bg-red-950/50 dark:text-red-300">
+                  <div className="mx-auto max-w-3xl">{error}</div>
+                </div>
+              )}
+
+              <div className="border-t border-gray-200 bg-white p-3 dark:border-gray-800 dark:bg-gray-900 sm:p-4">
+                <div className="mx-auto mb-3 flex max-w-3xl flex-wrap items-center gap-2">
+                  <div className="flex items-center gap-2">
+                    <label
+                      htmlFor="model-selector"
+                      className="text-sm font-medium text-gray-600 dark:text-gray-300"
+                    >
+                      Model
+                    </label>
+                    <select
+                      id="model-selector"
+                      value={model}
+                      onChange={(event) => setModel(event.target.value)}
+                      disabled={loading}
+                      className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:focus:border-purple-500 dark:focus:ring-purple-950"
+                    >
+                      <option value="gpt-4o-mini">GPT-4o Mini</option>
+                      <option value="gpt-4o">GPT-4o</option>
+                    </select>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setWebSearch((current) => !current)}
+                    disabled={loading}
+                    aria-pressed={webSearch}
+                    className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition ${
+                      webSearch
+                        ? "border-purple-300 bg-purple-50 text-purple-700 dark:border-purple-700 dark:bg-purple-950 dark:text-purple-300"
+                        : "border-gray-300 bg-white text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                    }`}
+                  >
+                    <span>🌐</span>
+                    <span>Web Search {webSearch ? "On" : "Off"}</span>
+                  </button>
+                </div>
+
+                <div className="mx-auto flex max-w-3xl gap-2 sm:gap-3">
+                  <input
+                    type="text"
+                    value={input}
+                    onChange={(event) => setInput(event.target.value)}
+                    onKeyDown={handleKeyDown}
+                    disabled={loading}
+                    placeholder="Ask NotebookLLM anything..."
+                    className="min-w-0 flex-1 rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none placeholder:text-gray-400 transition focus:border-purple-500 focus:ring-2 focus:ring-purple-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-purple-500 dark:focus:ring-purple-950 sm:px-4 sm:py-3"
+                  />
+
+                  <button
+                    type="button"
+                    onClick={handleSend}
+                    disabled={loading || !input.trim()}
+                    className="shrink-0 rounded-xl bg-purple-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-50 sm:px-5 sm:py-3 sm:text-base"
+                  >
+                    {loading ? "Sending..." : "Send"}
+                  </button>
+                </div>
+
+                <p className="mx-auto mt-2 max-w-3xl text-center text-[11px] text-gray-400 dark:text-gray-500">
+                  Press Enter to send · Shift + Enter for a new line
+                </p>
+              </div>
+            </div>
           </div>
-                    {/* Error */}          {" "}
-          {error && (
-            <div className="border-t border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-900 dark:bg-red-950 dark:text-red-300">
-                            {error}            {" "}
-            </div>
-          )}
-                    {/* Input */}          {" "}
-          <div className="border-t border-gray-200 p-3 dark:border-gray-800 sm:p-4">
-                        {/* Controls */}            {" "}
-            <div className="mx-auto mb-3 flex max-w-3xl flex-wrap items-center gap-2">
-                            {/* Model Selector */}              {" "}
-              <div className="flex items-center gap-2">
-                                               {" "}
-                <label
-                  htmlFor="model-selector"
-                  className="text-sm font-medium text-gray-600 dark:text-gray-300"
-                >
-                                    Model                {" "}
-                </label>{" "}
-                               {" "}
-                <select
-                  id="model-selector"
-                  value={model}
-                  onChange={(event) => setModel(event.target.value)}
-                  disabled={loading}
-                  className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 outline-none transition-colors focus:border-purple-500 focus:ring-2 focus:ring-purple-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:focus:border-purple-500 dark:focus:ring-purple-950"
-                >
-                                                     {" "}
-                  <option value="gpt-4o-mini">GPT-4o Mini</option>             
-                      <option value="gpt-4o">GPT-4o</option>              
-                   {" "}
-                </select>{" "}
-                             {" "}
-              </div>
-                            {/* Web Search */}              {" "}
-              <button
-                type="button"
-                onClick={() => setWebSearch((current) => !current)}
-                disabled={loading}
-                className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
-                  webSearch
-                    ? "border-purple-300 bg-purple-50 text-purple-700 dark:border-purple-700 dark:bg-purple-950 dark:text-purple-300"
-                    : "border-gray-300 bg-white text-gray-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
-                }`}
-              >
-                                <span>🌐</span>                {" "}
-                <span>Web Search {webSearch ? "On" : "Off"}</span>            
-                 {" "}
-              </button>{" "}
-                         {" "}
-            </div>
-                        {/* Input */}            {" "}
-            <div className="mx-auto flex max-w-3xl gap-2 sm:gap-3">
-                                         {" "}
-              <input
-                type="text"
-                value={input}
-                onChange={(event) => setInput(event.target.value)}
-                onKeyDown={handleKeyDown}
-                disabled={loading}
-                placeholder="Ask NotebookLLM anything..."
-                className="min-w-0 flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none placeholder:text-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-purple-500 dark:focus:ring-purple-950 sm:px-4 sm:py-3"
-              />{" "}
-                           {" "}
-              <button
-                type="button"
-                onClick={handleSend}
-                disabled={loading || !input.trim()}
-                className="shrink-0 rounded-lg bg-purple-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-50 sm:px-5 sm:py-3 sm:text-base"
-              >
-                                {loading ? "Sending..." : "Send"}            
-                 {" "}
-              </button>{" "}
-                         {" "}
-            </div>{" "}
-                     {" "}
-          </div>{" "}
-                 {" "}
-        </div>{" "}
-             {" "}
-      </div>{" "}
-         {" "}
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-import Card from "../components/Card";
 import Button from "../components/Button";
 import { apiRequest, bulkDeleteSources, deleteSource } from "../services/api";
 
@@ -65,9 +64,7 @@ function WorkspaceSources() {
     let cancelled = false;
 
     const timeoutId = setTimeout(async () => {
-      if (cancelled) {
-        return;
-      }
+      if (cancelled) return;
 
       try {
         const data = await apiRequest(`/api/workspaces/${workspaceId}/sources`);
@@ -91,9 +88,7 @@ function WorkspaceSources() {
   const handleUploadPdf = async (event) => {
     const file = event.target.files?.[0];
 
-    if (!file) {
-      return;
-    }
+    if (!file) return;
 
     if (file.type !== "application/pdf") {
       setError("Please select a PDF file.");
@@ -132,7 +127,6 @@ function WorkspaceSources() {
       const uploadedSource = await response.json();
 
       setSources((currentSources) => [uploadedSource, ...currentSources]);
-
       event.target.value = "";
       setShowAddSource(false);
     } catch (error) {
@@ -262,9 +256,7 @@ function WorkspaceSources() {
       "Are you sure you want to delete this source?",
     );
 
-    if (!confirmed) {
-      return;
-    }
+    if (!confirmed) return;
 
     try {
       setError("");
@@ -285,9 +277,7 @@ function WorkspaceSources() {
   };
 
   const handleBulkDelete = async () => {
-    if (selectedSourceIds.length === 0) {
-      return;
-    }
+    if (selectedSourceIds.length === 0) return;
 
     const confirmed = window.confirm(
       `Are you sure you want to delete ${selectedSourceIds.length} selected source${
@@ -295,9 +285,7 @@ function WorkspaceSources() {
       }?`,
     );
 
-    if (!confirmed) {
-      return;
-    }
+    if (!confirmed) return;
 
     try {
       setError("");
@@ -317,282 +305,356 @@ function WorkspaceSources() {
     }
   };
 
+  const sourceTypeOptions = [
+    {
+      type: "PDF",
+      label: "PDF",
+      description: "Upload a document",
+      icon: "PDF",
+    },
+    {
+      type: "WEBSITE",
+      label: "Website",
+      description: "Import a webpage",
+      icon: "WEB",
+    },
+    {
+      type: "YOUTUBE",
+      label: "YouTube",
+      description: "Import a transcript",
+      icon: "YT",
+    },
+    {
+      type: "TEXT",
+      label: "Text",
+      description: "Add plain text",
+      icon: "TXT",
+    },
+    {
+      type: "MARKDOWN",
+      label: "Markdown",
+      description: "Add Markdown",
+      icon: "MD",
+    },
+  ];
+
+  const getStatusClasses = (status) => {
+    if (status === "COMPLETED" || status === "READY") {
+      return "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300";
+    }
+
+    if (status === "FAILED" || status === "ERROR") {
+      return "border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300";
+    }
+
+    if (status === "PROCESSING" || status === "PENDING") {
+      return "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300";
+    }
+
+    return "border-gray-200 bg-gray-50 text-gray-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300";
+  };
+
+  const getSourceIcon = (type) => {
+    const normalized = String(type || "").toUpperCase();
+
+    if (normalized === "PDF") return "PDF";
+    if (normalized === "WEBSITE") return "WEB";
+    if (normalized === "YOUTUBE") return "YT";
+    if (normalized === "MARKDOWN") return "MD";
+    return "TXT";
+  };
+
   return (
-    <div className="mx-auto w-full max-w-7xl">
-      <div className="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white sm:text-3xl">
-            Sources
-          </h1>
+    <div className="min-h-[calc(100vh-4rem)] w-full bg-gray-50 text-gray-950 dark:bg-gray-950 dark:text-white">
+      <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+        {/* Header */}
+        <section className="relative overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+          <div className="pointer-events-none absolute -right-16 -top-20 h-52 w-52 rounded-full bg-purple-100 blur-3xl dark:bg-purple-950/40" />
 
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-300 sm:text-base">
-            Manage the learning materials in this workspace.
-          </p>
-        </div>
+          <div className="relative flex flex-col gap-5 p-5 sm:p-7 lg:flex-row lg:items-center lg:justify-between">
+            <div className="min-w-0">
+              <button
+                type="button"
+                onClick={() => navigate(`/workspaces/${workspaceId}`)}
+                className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-gray-500 transition hover:text-purple-600 focus:outline-none focus-visible:ring-4 focus-visible:ring-purple-500/20 dark:text-gray-400 dark:hover:text-purple-400"
+              >
+                <span aria-hidden="true">←</span>
+                Workspace
+              </button>
 
-        <div className="flex flex-wrap gap-2">
-          <Button onClick={() => setShowAddSource((value) => !value)}>
-            {showAddSource ? "Close" : "+ Add Source"}
-          </Button>
+              <div className="flex items-start gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-purple-100 text-sm font-bold text-purple-700 dark:bg-purple-950/60 dark:text-purple-300">
+                  SRC
+                </div>
 
-          <Button
-            variant="outline"
-            onClick={() => navigate(`/workspaces/${workspaceId}`)}
-          >
-            ← Back
-          </Button>
-        </div>
-      </div>
+                <div className="min-w-0">
+                  <div className="mb-1 inline-flex items-center gap-2 rounded-full border border-purple-200 bg-purple-50 px-3 py-1 text-xs font-semibold text-purple-700 dark:border-purple-900/70 dark:bg-purple-950/40 dark:text-purple-300">
+                    <span className="h-1.5 w-1.5 rounded-full bg-purple-500" />
+                    Learning materials
+                  </div>
 
-      {showAddSource && (
-        <Card className="mb-6">
-          <div className="mb-5">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-              Add Source
-            </h2>
+                  <h1 className="text-2xl font-bold tracking-tight text-gray-950 dark:text-white sm:text-3xl">
+                    Sources
+                  </h1>
 
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Choose how you want to add learning material.
-            </p>
-          </div>
-
-          <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-5">
-            <button
-              type="button"
-              onClick={() => handleSourceTypeChange("PDF")}
-              className={`rounded-lg border p-4 text-left transition ${
-                sourceType === "PDF"
-                  ? "border-purple-500 bg-purple-50 dark:border-purple-400 dark:bg-purple-950/30"
-                  : "border-gray-200 bg-white hover:border-purple-300 dark:border-gray-700 dark:bg-gray-900"
-              }`}
-            >
-              <div className="text-2xl">📄</div>
-              <div className="mt-2 font-medium text-gray-900 dark:text-white">
-                PDF
-              </div>
-              <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Upload a PDF
-              </div>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleSourceTypeChange("WEBSITE")}
-              className={`rounded-lg border p-4 text-left transition ${
-                sourceType === "WEBSITE"
-                  ? "border-purple-500 bg-purple-50 dark:border-purple-400 dark:bg-purple-950/30"
-                  : "border-gray-200 bg-white hover:border-purple-300 dark:border-gray-700 dark:bg-gray-900"
-              }`}
-            >
-              <div className="text-2xl">🌐</div>
-              <div className="mt-2 font-medium text-gray-900 dark:text-white">
-                Website
-              </div>
-              <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Import a webpage
-              </div>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleSourceTypeChange("YOUTUBE")}
-              className={`rounded-lg border p-4 text-left transition ${
-                sourceType === "YOUTUBE"
-                  ? "border-purple-500 bg-purple-50 dark:border-purple-400 dark:bg-purple-950/30"
-                  : "border-gray-200 bg-white hover:border-purple-300 dark:border-gray-700 dark:bg-gray-900"
-              }`}
-            >
-              <div className="text-2xl">▶️</div>
-              <div className="mt-2 font-medium text-gray-900 dark:text-white">
-                YouTube
-              </div>
-              <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Import a video transcript
-              </div>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleSourceTypeChange("TEXT")}
-              className={`rounded-lg border p-4 text-left transition ${
-                sourceType === "TEXT"
-                  ? "border-purple-500 bg-purple-50 dark:border-purple-400 dark:bg-purple-950/30"
-                  : "border-gray-200 bg-white hover:border-purple-300 dark:border-gray-700 dark:bg-gray-900"
-              }`}
-            >
-              <div className="text-2xl">📝</div>
-              <div className="mt-2 font-medium text-gray-900 dark:text-white">
-                Text
-              </div>
-              <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Add plain text
-              </div>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleSourceTypeChange("MARKDOWN")}
-              className={`rounded-lg border p-4 text-left transition ${
-                sourceType === "MARKDOWN"
-                  ? "border-purple-500 bg-purple-50 dark:border-purple-400 dark:bg-purple-950/30"
-                  : "border-gray-200 bg-white hover:border-purple-300 dark:border-gray-700 dark:bg-gray-900"
-              }`}
-            >
-              <div className="text-2xl">📋</div>
-              <div className="mt-2 font-medium text-gray-900 dark:text-white">
-                Markdown
-              </div>
-              <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Add Markdown content
-              </div>
-            </button>
-          </div>
-
-          {sourceType === "PDF" && (
-            <div className="rounded-lg border border-dashed border-gray-300 p-6 text-center dark:border-gray-700">
-              <div className="mb-3 text-4xl">📄</div>
-
-              <h3 className="font-semibold text-gray-900 dark:text-white">
-                Upload PDF
-              </h3>
-
-              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                Select a PDF file to add it to this workspace.
-              </p>
-
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="application/pdf"
-                onChange={handleUploadPdf}
-                className="hidden"
-              />
-
-              <div className="mt-5">
-                <Button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={uploading}
-                >
-                  {uploading ? "Uploading..." : "Choose PDF"}
-                </Button>
+                  <p className="mt-1 text-sm leading-6 text-gray-600 dark:text-gray-400 sm:text-base">
+                    Manage the documents, websites, videos, and notes used by
+                    this workspace.
+                  </p>
+                </div>
               </div>
             </div>
-          )}
 
-          {(sourceType === "WEBSITE" || sourceType === "YOUTUBE") && (
-            <form onSubmit={handleCreateSource} className="space-y-4">
-              <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {sourceType === "WEBSITE" ? "Website URL" : "YouTube URL"}
-                </label>
-
-                <input
-                  type="url"
-                  value={url}
-                  onChange={(event) => setUrl(event.target.value)}
-                  placeholder={
-                    sourceType === "WEBSITE"
-                      ? "https://example.com"
-                      : "https://www.youtube.com/watch?v=..."
-                  }
-                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:focus:ring-purple-900"
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Title{" "}
-                  <span className="font-normal text-gray-400">(optional)</span>
-                </label>
-
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(event) => setTitle(event.target.value)}
-                  placeholder="Enter a title"
-                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:focus:ring-purple-900"
-                />
-              </div>
-
-              <Button type="submit" disabled={uploading}>
-                {uploading
-                  ? "Importing..."
-                  : sourceType === "WEBSITE"
-                    ? "Import Website"
-                    : "Import YouTube"}
+            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+              <Button onClick={() => setShowAddSource((value) => !value)}>
+                {showAddSource ? "Close" : "+ Add Source"}
               </Button>
-            </form>
-          )}
 
-          {(sourceType === "TEXT" || sourceType === "MARKDOWN") && (
-            <form onSubmit={handleCreateSource} className="space-y-4">
-              <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Title
-                </label>
-
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(event) => setTitle(event.target.value)}
-                  placeholder={
-                    sourceType === "TEXT" ? "My Notes" : "My Markdown Notes"
-                  }
-                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:focus:ring-purple-900"
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Content
-                </label>
-
-                <textarea
-                  value={content}
-                  onChange={(event) => setContent(event.target.value)}
-                  rows={10}
-                  placeholder={
-                    sourceType === "TEXT"
-                      ? "Paste your text here..."
-                      : "# Heading\n\nWrite your Markdown content here..."
-                  }
-                  className="w-full resize-y rounded-lg border border-gray-300 bg-white px-4 py-3 font-mono text-sm text-gray-900 outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-                />
-              </div>
-
-              <Button type="submit" disabled={uploading}>
-                {uploading
-                  ? "Creating..."
-                  : sourceType === "TEXT"
-                    ? "Create Text Source"
-                    : "Create Markdown Source"}
+              <Button
+                variant="outline"
+                onClick={() => navigate(`/workspaces/${workspaceId}`)}
+              >
+                ← Back
               </Button>
-            </form>
-          )}
-        </Card>
-      )}
+            </div>
+          </div>
+        </section>
 
-      {error && (
-        <Card className="mb-4">
-          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-        </Card>
-      )}
+        {/* Add source */}
+        {showAddSource && (
+          <section className="mt-6 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+            <div className="border-b border-gray-100 px-5 py-5 dark:border-gray-800 sm:px-7">
+              <h2 className="text-xl font-semibold text-gray-950 dark:text-white">
+                Add a source
+              </h2>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                Choose how you want to bring learning material into this
+                workspace.
+              </p>
+            </div>
 
-      {loading && (
-        <Card>
-          <p className="text-sm text-gray-600 dark:text-gray-300">
-            Loading sources...
-          </p>
-        </Card>
-      )}
+            <div className="p-5 sm:p-7">
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
+                {sourceTypeOptions.map((option) => {
+                  const active = sourceType === option.type;
 
-      {!loading && sources.length === 0 && (
-        <Card>
-          <div className="px-2 py-8 text-center sm:px-6 sm:py-10">
-            <div className="mb-4 text-4xl">📚</div>
+                  return (
+                    <button
+                      key={option.type}
+                      type="button"
+                      onClick={() => handleSourceTypeChange(option.type)}
+                      className={`rounded-xl border p-4 text-left outline-none transition ${
+                        active
+                          ? "border-purple-500 bg-purple-50 ring-2 ring-purple-500/10 dark:border-purple-500 dark:bg-purple-950/30"
+                          : "border-gray-200 bg-gray-50 hover:border-purple-300 hover:bg-white focus-visible:ring-4 focus-visible:ring-purple-500/20 dark:border-gray-800 dark:bg-gray-800/60 dark:hover:border-purple-900/70 dark:hover:bg-gray-800"
+                      }`}
+                    >
+                      <div
+                        className={`flex h-9 w-9 items-center justify-center rounded-lg text-[10px] font-bold tracking-wide ${
+                          active
+                            ? "bg-purple-600 text-white"
+                            : "bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
+                        }`}
+                      >
+                        {option.icon}
+                      </div>
 
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white sm:text-xl">
+                      <div className="mt-3 font-semibold text-gray-950 dark:text-white">
+                        {option.label}
+                      </div>
+
+                      <div className="mt-1 text-xs leading-5 text-gray-500 dark:text-gray-400">
+                        {option.description}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="mt-6">
+                {sourceType === "PDF" && (
+                  <div className="rounded-2xl border border-dashed border-gray-300 bg-gray-50 px-5 py-10 text-center dark:border-gray-700 dark:bg-gray-800/40">
+                    <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-purple-100 text-sm font-bold text-purple-700 dark:bg-purple-950/50 dark:text-purple-300">
+                      PDF
+                    </div>
+
+                    <h3 className="mt-4 font-semibold text-gray-950 dark:text-white">
+                      Upload a PDF
+                    </h3>
+
+                    <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-gray-500 dark:text-gray-400">
+                      Select a PDF file to add it to this workspace.
+                    </p>
+
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="application/pdf"
+                      onChange={handleUploadPdf}
+                      className="hidden"
+                    />
+
+                    <div className="mt-5">
+                      <Button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploading}
+                      >
+                        {uploading ? "Uploading..." : "Choose PDF"}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {(sourceType === "WEBSITE" || sourceType === "YOUTUBE") && (
+                  <form onSubmit={handleCreateSource} className="space-y-5">
+                    <div>
+                      <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        {sourceType === "WEBSITE"
+                          ? "Website URL"
+                          : "YouTube URL"}
+                      </label>
+
+                      <input
+                        type="url"
+                        value={url}
+                        onChange={(event) => setUrl(event.target.value)}
+                        placeholder={
+                          sourceType === "WEBSITE"
+                            ? "https://example.com"
+                            : "https://www.youtube.com/watch?v=..."
+                        }
+                        className="min-h-11 w-full rounded-xl border border-gray-300 bg-gray-50 px-4 text-sm text-gray-950 outline-none transition placeholder:text-gray-400 focus:border-purple-500 focus:bg-white focus:ring-4 focus:ring-purple-500/10 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-purple-500 dark:focus:bg-gray-800"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Title{" "}
+                        <span className="font-normal text-gray-400">
+                          (optional)
+                        </span>
+                      </label>
+
+                      <input
+                        type="text"
+                        value={title}
+                        onChange={(event) => setTitle(event.target.value)}
+                        placeholder="Enter a title"
+                        className="min-h-11 w-full rounded-xl border border-gray-300 bg-gray-50 px-4 text-sm text-gray-950 outline-none transition placeholder:text-gray-400 focus:border-purple-500 focus:bg-white focus:ring-4 focus:ring-purple-500/10 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-purple-500 dark:focus:bg-gray-800"
+                      />
+                    </div>
+
+                    <Button type="submit" disabled={uploading}>
+                      {uploading
+                        ? "Importing..."
+                        : sourceType === "WEBSITE"
+                          ? "Import Website"
+                          : "Import YouTube"}
+                    </Button>
+                  </form>
+                )}
+
+                {(sourceType === "TEXT" || sourceType === "MARKDOWN") && (
+                  <form onSubmit={handleCreateSource} className="space-y-5">
+                    <div>
+                      <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Title
+                      </label>
+
+                      <input
+                        type="text"
+                        value={title}
+                        onChange={(event) => setTitle(event.target.value)}
+                        placeholder={
+                          sourceType === "TEXT"
+                            ? "My Notes"
+                            : "My Markdown Notes"
+                        }
+                        className="min-h-11 w-full rounded-xl border border-gray-300 bg-gray-50 px-4 text-sm text-gray-950 outline-none transition placeholder:text-gray-400 focus:border-purple-500 focus:bg-white focus:ring-4 focus:ring-purple-500/10 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-purple-500 dark:focus:bg-gray-800"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Content
+                      </label>
+
+                      <textarea
+                        value={content}
+                        onChange={(event) => setContent(event.target.value)}
+                        rows={10}
+                        placeholder={
+                          sourceType === "TEXT"
+                            ? "Paste your text here..."
+                            : "# Heading\n\nWrite your Markdown content here..."
+                        }
+                        className="w-full resize-y rounded-xl border border-gray-300 bg-gray-50 px-4 py-3 font-mono text-sm leading-6 text-gray-950 outline-none placeholder:text-gray-400 focus:border-purple-500 focus:bg-white focus:ring-4 focus:ring-purple-500/10 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-purple-500 dark:focus:bg-gray-800"
+                      />
+                    </div>
+
+                    <Button type="submit" disabled={uploading}>
+                      {uploading
+                        ? "Creating..."
+                        : sourceType === "TEXT"
+                          ? "Create Text Source"
+                          : "Create Markdown Source"}
+                    </Button>
+                  </form>
+                )}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {error && (
+          <div
+            role="alert"
+            className="mt-6 flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-4 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              className="mt-0.5 h-5 w-5 shrink-0"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="9" />
+              <path d="M12 8v5M12 16h.01" strokeLinecap="round" />
+            </svg>
+            <span>{error}</span>
+          </div>
+        )}
+
+        {/* Loading */}
+        {loading && (
+          <section className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3].map((item) => (
+              <div
+                key={item}
+                className="animate-pulse rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-xl bg-gray-200 dark:bg-gray-800" />
+                  <div className="h-5 w-2/3 rounded bg-gray-200 dark:bg-gray-800" />
+                </div>
+                <div className="mt-6 h-4 w-1/3 rounded bg-gray-100 dark:bg-gray-800/70" />
+                <div className="mt-3 h-4 w-1/2 rounded bg-gray-100 dark:bg-gray-800/70" />
+                <div className="mt-8 h-9 w-full rounded-lg bg-gray-100 dark:bg-gray-800/70" />
+              </div>
+            ))}
+          </section>
+        )}
+
+        {/* Empty */}
+        {!loading && sources.length === 0 && (
+          <section className="mt-8 rounded-2xl border border-dashed border-gray-300 bg-white px-6 py-14 text-center shadow-sm dark:border-gray-700 dark:bg-gray-900">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-purple-100 text-sm font-bold text-purple-700 dark:bg-purple-950/50 dark:text-purple-300">
+              SRC
+            </div>
+
+            <h2 className="mt-5 text-lg font-semibold text-gray-950 dark:text-white sm:text-xl">
               No sources yet
             </h2>
 
@@ -600,86 +662,136 @@ function WorkspaceSources() {
               Add a PDF, website, YouTube video, text, or Markdown source to
               start learning.
             </p>
-          </div>
-        </Card>
-      )}
 
-      {!loading && sources.length > 0 && (
-        <>
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-              <input
-                type="checkbox"
-                checked={
-                  sources.length > 0 &&
-                  selectedSourceIds.length === sources.length
-                }
-                onChange={handleSelectAll}
-                className="h-5 w-5 cursor-pointer rounded border-gray-300 text-purple-600 focus:ring-purple-500"
-              />
-
-              <span>Select All</span>
-            </label>
-
-            {selectedSourceIds.length > 0 && (
-              <Button variant="outline" onClick={handleBulkDelete}>
-                Delete Selected ({selectedSourceIds.length})
+            <div className="mt-5">
+              <Button onClick={() => setShowAddSource(true)}>
+                + Add your first source
               </Button>
-            )}
-          </div>
+            </div>
+          </section>
+        )}
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {sources.map((source) => (
-              <Card
-                key={source.id}
-                onClick={() =>
-                  navigate(`/workspaces/${workspaceId}/sources/${source.id}`)
-                }
-                className="cursor-pointer transition hover:border-purple-300 hover:bg-purple-50 hover:shadow-md dark:hover:border-purple-800 dark:hover:bg-purple-950/30"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <h2 className="font-semibold text-gray-900 dark:text-white">
-                    {source.title || "Untitled Source"}
-                  </h2>
+        {/* Sources */}
+        {!loading && sources.length > 0 && (
+          <section className="mt-8">
+            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-xl font-semibold tracking-tight text-gray-950 dark:text-white">
+                  Your sources
+                </h2>
+                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                  {sources.length} {sources.length === 1 ? "source" : "sources"}{" "}
+                  in this workspace
+                </p>
+              </div>
 
+              <div className="flex flex-wrap items-center gap-3">
+                <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                   <input
                     type="checkbox"
-                    checked={selectedSourceIds.includes(source.id)}
-                    onChange={() => handleToggleSource(source.id)}
-                    onClick={(event) => event.stopPropagation()}
-                    className="mt-1 h-5 w-5 shrink-0 cursor-pointer rounded border-gray-300 text-purple-600 focus:ring-purple-500"
-                    aria-label={`Select ${source.title || "source"}`}
+                    checked={
+                      sources.length > 0 &&
+                      selectedSourceIds.length === sources.length
+                    }
+                    onChange={handleSelectAll}
+                    className="h-5 w-5 cursor-pointer rounded border-gray-300 text-purple-600 focus:ring-purple-500 dark:border-gray-600"
                   />
-                </div>
+                  <span>Select all</span>
+                </label>
 
-                <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                  Type: {source.type}
-                </p>
-
-                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                  Status: {source.status}
-                </p>
-
-                <div className="mt-4 flex items-center justify-between gap-3">
-                  <span className="text-sm font-medium text-purple-600 dark:text-purple-400">
-                    View Source →
-                  </span>
-
-                  <Button
-                    variant="outline"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      handleDeleteSource(source.id);
-                    }}
-                  >
-                    Delete
+                {selectedSourceIds.length > 0 && (
+                  <Button variant="outline" onClick={handleBulkDelete}>
+                    Delete selected ({selectedSourceIds.length})
                   </Button>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </>
-      )}
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {sources.map((source) => (
+                <article
+                  key={source.id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() =>
+                    navigate(`/workspaces/${workspaceId}/sources/${source.id}`)
+                  }
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      navigate(
+                        `/workspaces/${workspaceId}/sources/${source.id}`,
+                      );
+                    }
+                  }}
+                  className="group flex min-h-56 cursor-pointer flex-col rounded-2xl border border-gray-200 bg-white p-5 text-left shadow-sm outline-none transition duration-200 hover:-translate-y-0.5 hover:border-purple-200 hover:shadow-md focus-visible:ring-4 focus-visible:ring-purple-500/20 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-purple-900/70"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-purple-100 text-[10px] font-bold tracking-wide text-purple-700 dark:bg-purple-950/50 dark:text-purple-300">
+                        {getSourceIcon(source.type)}
+                      </div>
+
+                      <h2 className="truncate font-semibold text-gray-950 dark:text-white">
+                        {source.title || "Untitled Source"}
+                      </h2>
+                    </div>
+
+                    <input
+                      type="checkbox"
+                      checked={selectedSourceIds.includes(source.id)}
+                      onChange={() => handleToggleSource(source.id)}
+                      onClick={(event) => event.stopPropagation()}
+                      className="mt-1 h-5 w-5 shrink-0 cursor-pointer rounded border-gray-300 text-purple-600 focus:ring-purple-500 dark:border-gray-600"
+                      aria-label={`Select ${source.title || "source"}`}
+                    />
+                  </div>
+
+                  <div className="mt-6 space-y-2">
+                    <div className="flex items-center justify-between gap-3 text-sm">
+                      <span className="text-gray-500 dark:text-gray-400">
+                        Type
+                      </span>
+                      <span className="font-medium text-gray-700 dark:text-gray-300">
+                        {source.type}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between gap-3 text-sm">
+                      <span className="text-gray-500 dark:text-gray-400">
+                        Status
+                      </span>
+                      <span
+                        className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${getStatusClasses(
+                          source.status,
+                        )}`}
+                      >
+                        {source.status}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="mt-auto flex items-center justify-between gap-3 border-t border-gray-100 pt-4 dark:border-gray-800">
+                    <span className="text-sm font-semibold text-purple-600 dark:text-purple-400">
+                      View source →
+                    </span>
+
+                    <Button
+                      variant="outline"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        handleDeleteSource(source.id);
+                      }}
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
+      </div>
     </div>
   );
 }
