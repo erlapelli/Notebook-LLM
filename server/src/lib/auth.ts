@@ -1,4 +1,3 @@
-
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import prisma from "./db.js";
@@ -6,23 +5,31 @@ import prisma from "./db.js";
 const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
 
 export const auth = betterAuth({
-    baseURL: process.env.BETTER_AUTH_URL,
-    secret: process.env.BETTER_AUTH_SECRET,
+  baseURL: process.env.BETTER_AUTH_URL,
+  secret: process.env.BETTER_AUTH_SECRET,
 
-    trustedOrigins: [clientUrl],
+  trustedOrigins: [clientUrl],
 
-    emailAndPassword: {
-        enabled: true,
+  advanced: {
+    defaultCookieAttributes: {
+      sameSite: "none",
+      secure: true,
+      httpOnly: true,
     },
+  },
 
-    database: prismaAdapter(prisma, {
-        provider: "postgresql",
-    }),
+  emailAndPassword: {
+    enabled: true,
+  },
 
-    socialProviders: {
-        google: {
-            clientId: process.env.GOOGLE_CLIENT_ID!,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-        },
+  database: prismaAdapter(prisma, {
+    provider: "postgresql",
+  }),
+
+  socialProviders: {
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     },
+  },
 });
