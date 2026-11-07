@@ -15,11 +15,15 @@ export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
   secret: process.env.BETTER_AUTH_SECRET,
 
-  trustedOrigins: [clientUrl],
+  trustedOrigins: [
+    clientUrl,
+    "https://notebookllm.co.in",
+    "https://www.notebookllm.co.in",
+  ],
 
   advanced: {
     defaultCookieAttributes: {
-      sameSite: "none",
+      sameSite: "lax",
       secure: true,
       httpOnly: true,
     },

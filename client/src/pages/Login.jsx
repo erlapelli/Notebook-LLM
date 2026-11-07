@@ -12,6 +12,7 @@ function Login() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  // Email and password login
   const handleLogin = async (event) => {
     event.preventDefault();
 
@@ -39,6 +40,7 @@ function Login() {
     }
   };
 
+  // Google OAuth login
   const handleGoogleLogin = async () => {
     setError("");
     setGoogleLoading(true);
@@ -47,6 +49,8 @@ function Login() {
       await authClient.signIn.social({
         provider: "google",
         callbackURL: `${window.location.origin}/`,
+        errorCallbackURL: `${window.location.origin}/login`,
+        newUserCallbackURL: `${window.location.origin}/`,
       });
     } catch (error) {
       console.error("Google login error:", error);

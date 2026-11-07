@@ -1,5 +1,19 @@
-node_modules
-# Keep environment variables out of version control
+node_modules/
+
+# Environment variables
 .env
 
+# Generated Prisma files
 /src/generated/prisma
+
+# TypeScript compiler output
+/src/**/*.js
+/src/**/*.js.map
+/src/**/*.d.ts
+/src/**/*.d.ts.map
+
+# Generated Prisma config output
+/prisma7.config.js
+/prisma7.config.js.map
+/prisma7.config.d.ts
+/prisma7.config.d.ts.map

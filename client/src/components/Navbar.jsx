@@ -13,6 +13,7 @@ function Navbar({ onMenuClick }) {
   const [isLoadingUser, setIsLoadingUser] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [user, setUser] = useState(null);
+  const [imageFailed, setImageFailed] = useState(false);
 
   const profileRef = useRef(null);
 
@@ -62,9 +63,20 @@ function Navbar({ onMenuClick }) {
     };
   }, []);
 
+  // Reset image fallback when the user's profile image changes.
+  useEffect(() => {
+    setImageFailed(false);
+  }, [user?.image]);
+
   const userName = user?.name || "User";
   const userEmail = user?.email || "";
   const userInitial = user?.name?.trim().charAt(0).toUpperCase() || "U";
+
+  const showProfileImage = Boolean(user?.image) && !imageFailed;
+
+  const handleImageError = () => {
+    setImageFailed(true);
+  };
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -93,6 +105,7 @@ function Navbar({ onMenuClick }) {
       }
 
       setUser(null);
+      setImageFailed(false);
       setIsProfileOpen(false);
       navigate("/login");
     } catch (error) {
@@ -125,13 +138,14 @@ function Navbar({ onMenuClick }) {
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-purple-600 text-lg font-bold text-white">
               N
             </div>
+
             <span className="text-lg font-bold text-gray-900 dark:text-white sm:text-xl">
               NotebookLLM
             </span>
           </button>
         </div>
 
-        {/* Desktop navigation is workspace-aware */}
+        {/* Desktop navigation */}
         <div className="hidden items-center gap-6 md:flex">
           <button
             type="button"
@@ -163,6 +177,7 @@ function Navbar({ onMenuClick }) {
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
+          {/* Theme toggle */}
           <button
             type="button"
             onClick={toggleTheme}
@@ -174,6 +189,7 @@ function Navbar({ onMenuClick }) {
             {theme === "light" ? "🌙" : "☀️"}
           </button>
 
+          {/* User profile */}
           <div ref={profileRef} className="relative">
             <button
               type="button"
@@ -185,10 +201,12 @@ function Navbar({ onMenuClick }) {
             >
               {isLoadingUser ? (
                 <span className="text-xs">...</span>
-              ) : user?.image ? (
+              ) : showProfileImage ? (
                 <img
                   src={user.image}
                   alt={userName}
+                  referrerPolicy="no-referrer"
+                  onError={handleImageError}
                   className="h-full w-full object-cover"
                 />
               ) : (
@@ -196,15 +214,18 @@ function Navbar({ onMenuClick }) {
               )}
             </button>
 
+            {/* Profile dropdown */}
             {isProfileOpen && !isLoadingUser && (
               <div className="absolute right-0 top-12 z-50 w-64 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-900">
                 <div className="border-b border-gray-200 px-4 py-4 dark:border-gray-700">
                   <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-purple-100 font-semibold text-purple-700 dark:bg-purple-950 dark:text-purple-300">
-                      {user?.image ? (
+                      {showProfileImage ? (
                         <img
                           src={user.image}
                           alt={userName}
+                          referrerPolicy="no-referrer"
+                          onError={handleImageError}
                           className="h-full w-full object-cover"
                         />
                       ) : (
@@ -216,6 +237,7 @@ function Navbar({ onMenuClick }) {
                       <p className="truncate text-sm font-semibold text-gray-900 dark:text-white">
                         {userName}
                       </p>
+
                       <p className="truncate text-xs text-gray-500 dark:text-gray-400">
                         {userEmail}
                       </p>

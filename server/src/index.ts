@@ -18,14 +18,11 @@ const clientUrl = process.env.CLIENT_URL ?? "http://localhost:5173";
 /*
  * CORS configuration
  */
-const corsOptions = {
+const corsOptions: cors.CorsOptions = {
   origin: clientUrl,
   credentials: true,
-
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-
   allowedHeaders: ["Content-Type", "Authorization"],
-
   exposedHeaders: ["X-Conversation-Id"],
 };
 
@@ -34,37 +31,11 @@ const corsOptions = {
  */
 app.use(cors(corsOptions));
 
-/*
- * Explicitly handle browser preflight requests.
- *
- * The browser sends an OPTIONS request before
- * PATCH/DELETE/etc. when CORS requires a preflight.
- */
-app.use((req, res, next) => {
-  if (req.method === "OPTIONS") {
-    res.header("Access-Control-Allow-Origin", clientUrl);
-
-    res.header("Access-Control-Allow-Credentials", "true");
-
-    res.header(
-      "Access-Control-Allow-Methods",
-      "GET,POST,PUT,PATCH,DELETE,OPTIONS",
-    );
-
-    res.header("Access-Control-Allow-Headers", "Content-Type,Authorization");
-
-    res.header("Access-Control-Expose-Headers", "X-Conversation-Id");
-
-    return res.sendStatus(204);
-  }
-
-  next();
-});
+console.log("CORS allowed origin:", clientUrl);
 
 /*
  * Better Auth handler
- *
- * This must stay before express.json().
+ * Keep this before express.json().
  */
 app.all("/api/auth/{*any}", toNodeHandler(auth));
 
